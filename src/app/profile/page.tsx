@@ -1,26 +1,32 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useAtom } from 'jotai'
-import { currentUserAtom, isUserConnectedAtom } from '@/store/global'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  User,
-  MapPin,
-  Briefcase,
-  AlertCircle
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react";
+import { useAtom } from "jotai";
+import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { User, MapPin, Briefcase, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useGetCurrentUser } from "@/lib/hooks";
 
 export default function ProfilePage() {
-  const router = useRouter()
-  const [currentUser] = useAtom(currentUserAtom)
-  const [isConnected] = useAtom(isUserConnectedAtom)
+  const router = useRouter();
+  const [isConnected] = useAtom(isUserConnectedAtom);
+  const { user } = useGetCurrentUser();
+
+  useEffect(() => {
+    console.log(user, isConnected);
+  }, [user, isConnected]);
 
   // Check if user is connected and has user data
-  if (!currentUser) {
+  if (!user || !isConnected) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
@@ -29,20 +35,20 @@ export default function ProfilePage() {
               <div className="mx-auto mb-4 h-16 w-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                 <AlertCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <CardTitle className="text-2xl">Wallet Connection Required</CardTitle>
+              <CardTitle className="text-2xl">
+                Wallet Connection Required
+              </CardTitle>
               <CardDescription>
                 Please connect your wallet to view your profile.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Button onClick={() => router.push('/')}>
-                Connect Wallet
-              </Button>
+              <Button onClick={() => router.push("/")}>Connect Wallet</Button>
             </CardContent>
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -72,14 +78,16 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Name</label>
-                  <p className="text-lg">{currentUser.name}</p>
+                  <p className="text-lg">{user.name}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Country</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Country
+                  </label>
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{currentUser.country}</span>
+                    <span>{user.country}</span>
                   </div>
                 </div>
 
@@ -87,7 +95,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium mb-2">Role</label>
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>{currentUser.role}</span>
+                    <span>{user.role}</span>
                   </div>
                 </div>
               </CardContent>
@@ -103,7 +111,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {currentUser.skills.map((skill, index) => (
+                  {user.skills.map((skill, index) => (
                     <Badge key={index} variant="secondary">
                       {skill}
                     </Badge>
@@ -123,12 +131,20 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <div className="text-sm text-muted-foreground">Wallet Address</div>
-                    <div className="font-mono text-sm break-all">{currentUser.wallet}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Wallet Address
+                    </div>
+                    <div className="font-mono text-sm break-all">
+                      {user.wallet}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Projects Created</div>
-                    <div className="text-lg font-semibold">{currentUser.projectCount}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Projects Created
+                    </div>
+                    <div className="text-lg font-semibold">
+                      {user.projectCount}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -137,5 +153,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

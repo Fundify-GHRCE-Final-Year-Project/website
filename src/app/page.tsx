@@ -1,23 +1,29 @@
 "use client";
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Rocket, 
-  Shield, 
-  Users, 
-  Zap, 
-  TrendingUp, 
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Rocket,
+  Shield,
+  Users,
+  Zap,
+  TrendingUp,
   Globe,
   ArrowRight,
   Star,
-  CheckCircle
-} from 'lucide-react'
-import { useEffect } from 'react'
-import { generateDummyUser } from '@/lib/hooks'
-import { currentUserAtom, isUserConnectedAtom } from '@/store/global'
-import { useSetAtom } from 'jotai'
+  CheckCircle,
+} from "lucide-react";
+import { useEffect } from "react";
+import { generateDummyUser } from "@/lib/hooks";
+import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
+import { useSetAtom } from "jotai";
 
 export default function HomePage() {
   const setUser = useSetAtom(currentUserAtom);
@@ -26,8 +32,8 @@ export default function HomePage() {
     const user = generateDummyUser("0x");
     setUser(user);
     setIsConnected(true);
-  }, [])
-  
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -38,17 +44,18 @@ export default function HomePage() {
               <Rocket className="h-3 w-3 mr-1" />
               Decentralized Funding Platform
             </Badge>
-            
+
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Fund Your Dreams with{' '}
+              Fund Your Dreams with{" "}
               <span className="gradient-text">Cryptocurrency</span>
             </h1>
-            
+
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Connect with global investors and bring your innovative projects to life. 
-              Fundify makes it easy to raise funds, manage milestones, and build the future.
+              Connect with global investors and bring your innovative projects
+              to life. Fundify makes it easy to raise funds, manage milestones,
+              and build the future.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/projects">
                 <Button size="lg" className="text-lg px-8 py-6">
@@ -57,13 +64,17 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/publish">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8 py-6"
+                >
                   Start Your Project
                   <Rocket className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
-            
+
             <div className="flex justify-center items-center space-x-8 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
@@ -90,11 +101,11 @@ export default function HomePage() {
               Why Choose Fundify?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our platform combines the power of blockchain technology with user-friendly features 
-              to create the ultimate funding experience.
+              Our platform combines the power of blockchain technology with
+              user-friendly features to create the ultimate funding experience.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="card-hover">
               <CardHeader>
@@ -103,8 +114,8 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Secure & Transparent</CardTitle>
                 <CardDescription>
-                  All transactions are secured by smart contracts on the Ethereum blockchain, 
-                  ensuring complete transparency and trust.
+                  All transactions are secured by smart contracts on the
+                  Ethereum blockchain, ensuring complete transparency and trust.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -116,7 +127,7 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Instant Funding</CardTitle>
                 <CardDescription>
-                  Receive funds instantly in cryptocurrency. No waiting periods, 
+                  Receive funds instantly in cryptocurrency. No waiting periods,
                   no complex banking procedures.
                 </CardDescription>
               </CardHeader>
@@ -129,8 +140,8 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Global Community</CardTitle>
                 <CardDescription>
-                  Connect with investors from around the world. 
-                  Build a global network of supporters for your project.
+                  Connect with investors from around the world. Build a global
+                  network of supporters for your project.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -142,8 +153,8 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Milestone Tracking</CardTitle>
                 <CardDescription>
-                  Set and track project milestones. Funds are released automatically 
-                  as you achieve your goals.
+                  Set and track project milestones. Funds are released
+                  automatically as you achieve your goals.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -155,8 +166,8 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Easy Setup</CardTitle>
                 <CardDescription>
-                  Create and launch your project in minutes. 
-                  Our intuitive interface makes fundraising simple.
+                  Create and launch your project in minutes. Our intuitive
+                  interface makes fundraising simple.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -168,8 +179,8 @@ export default function HomePage() {
                 </div>
                 <CardTitle>Decentralized</CardTitle>
                 <CardDescription>
-                  No central authority controls your funds. 
-                  You maintain full control over your project and finances.
+                  No central authority controls your funds. You maintain full
+                  control over your project and finances.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -182,19 +193,27 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold gradient-text">$2.5M+</div>
+              <div className="text-3xl md:text-4xl font-bold gradient-text">
+                $2.5M+
+              </div>
               <div className="text-muted-foreground">Total Funds Raised</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold gradient-text">150+</div>
+              <div className="text-3xl md:text-4xl font-bold gradient-text">
+                150+
+              </div>
               <div className="text-muted-foreground">Projects Funded</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold gradient-text">5K+</div>
+              <div className="text-3xl md:text-4xl font-bold gradient-text">
+                5K+
+              </div>
               <div className="text-muted-foreground">Active Investors</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold gradient-text">98%</div>
+              <div className="text-3xl md:text-4xl font-bold gradient-text">
+                98%
+              </div>
               <div className="text-muted-foreground">Success Rate</div>
             </div>
           </div>
@@ -208,18 +227,26 @@ export default function HomePage() {
             Ready to Start Your Journey?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of creators and investors who are already building the future 
-            with Fundify.
+            Join thousands of creators and investors who are already building
+            the future with Fundify.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/publish">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="text-lg px-8 py-6"
+              >
                 Launch Your Project
                 <Rocket className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/projects">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-blue-600">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-blue-600"
+              >
                 Explore Projects
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -228,5 +255,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-  )
-} 
+  );
+}

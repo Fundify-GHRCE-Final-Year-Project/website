@@ -1,74 +1,74 @@
-import { useAtom } from 'jotai';
-import { useEffect } from 'react';
-import { 
-  currentUserAtom, 
-  allProjectsAtom, 
-  userProjectsAtom, 
-  investedProjectsAtom, 
+import { useAtom } from "jotai";
+import { useEffect } from "react";
+import {
+  currentUserAtom,
+  allProjectsAtom,
+  userProjectsAtom,
+  investedProjectsAtom,
   selectedProjectAtom,
   isLoadingAtom,
   errorMessageAtom,
   successMessageAtom,
   isUserConnectedAtom,
-  userWalletAtom
-} from '@/store/global';
-import { 
-  getUserFromCache, 
-  setUserToCache, 
-  getProjectsFromCache, 
+  userWalletAtom,
+} from "@/store/global";
+import {
+  getUserFromCache,
+  setUserToCache,
+  getProjectsFromCache,
   setProjectsToCache,
   getUserProjectsFromCache,
   setUserProjectsToCache,
   getInvestedProjectsFromCache,
   setInvestedProjectsToCache,
   getSelectedProjectFromCache,
-  setSelectedProjectToCache
-} from '@/lib/browserCache';
-import { User, Project } from '@/types/global';
+  setSelectedProjectToCache,
+} from "@/lib/browserCache";
+import { User, Project } from "@/types/global";
 
 // Dummy data generators
 export const generateDummyUser = (wallet: string): User => ({
   wallet,
-  name: 'John Doe',
-  country: 'United States',
+  name: "John Doe",
+  country: "United States",
   investments: [
     {
-      projectOwner: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+      projectOwner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
       index: 1,
       amount: 2.5,
-      defunded: 0.5
+      defunded: 0.5,
     },
     {
-      projectOwner: '0x1234567890123456789012345678901234567890',
+      projectOwner: "0x1234567890123456789012345678901234567890",
       index: 2,
       amount: 1.8,
-      defunded: 0
-    }
+      defunded: 0,
+    },
   ],
   projectCount: 3,
-  role: 'Software Developer',
-  skills: ['React', 'TypeScript', 'Node.js', 'Solidity', 'Web3'],
+  role: "Software Developer",
+  skills: ["React", "TypeScript", "Node.js", "Solidity", "Web3"],
   experiences: [
     {
-      role: 'Senior Developer',
-      company: 'Tech Corp',
-      duration: '2020-2023'
+      role: "Senior Developer",
+      company: "Tech Corp",
+      duration: "2020-2023",
     },
     {
-      role: 'Full Stack Developer',
-      company: 'Startup Inc',
-      duration: '2018-2020'
-    }
+      role: "Full Stack Developer",
+      company: "Startup Inc",
+      duration: "2018-2020",
+    },
   ],
-  linkedin: 'https://linkedin.com/in/johndoe',
-  x: 'https://x.com/johndoe',
-  github: 'https://github.com/johndoe'
+  linkedin: "https://linkedin.com/in/johndoe",
+  x: "https://x.com/johndoe",
+  github: "https://github.com/johndoe",
 });
 
 const generateDummyProjects = (): Project[] => [
   {
-    owner: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-    members: ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'],
+    owner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+    members: ["0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"],
     index: 1,
     goal: 50,
     milestones: 3,
@@ -76,12 +76,13 @@ const generateDummyProjects = (): Project[] => [
     released: 15,
     defunded: 5,
     ended: false,
-    title: 'DeFi Lending Platform',
-    description: 'A decentralized lending platform built on Ethereum with smart contract automation.'
+    title: "DeFi Lending Platform",
+    description:
+      "A decentralized lending platform built on Ethereum with smart contract automation.",
   },
   {
-    owner: '0x1234567890123456789012345678901234567890',
-    members: ['0x1234567890123456789012345678901234567890'],
+    owner: "0x1234567890123456789012345678901234567890",
+    members: ["0x1234567890123456789012345678901234567890"],
     index: 2,
     goal: 25,
     milestones: 2,
@@ -89,12 +90,13 @@ const generateDummyProjects = (): Project[] => [
     released: 12.5,
     defunded: 0,
     ended: false,
-    title: 'NFT Marketplace',
-    description: 'A comprehensive NFT marketplace with advanced trading features and analytics.'
+    title: "NFT Marketplace",
+    description:
+      "A comprehensive NFT marketplace with advanced trading features and analytics.",
   },
   {
-    owner: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-    members: ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'],
+    owner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+    members: ["0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"],
     index: 3,
     goal: 100,
     milestones: 4,
@@ -102,9 +104,10 @@ const generateDummyProjects = (): Project[] => [
     released: 25,
     defunded: 10,
     ended: false,
-    title: 'DAO Governance Platform',
-    description: 'A decentralized autonomous organization platform with voting mechanisms and proposal management.'
-  }
+    title: "DAO Governance Platform",
+    description:
+      "A decentralized autonomous organization platform with voting mechanisms and proposal management.",
+  },
 ];
 
 /**
@@ -133,17 +136,17 @@ export const useGetCurrentUser = () => {
       }
 
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Generate dummy user data
       const userData = generateDummyUser(wallet);
-      
+
       // Cache the data
       setUserToCache(userData);
       setCurrentUser(userData);
     } catch (err) {
-      setError('Failed to fetch user data');
-      console.error('Error fetching user:', err);
+      setError("Failed to fetch user data");
+      console.error("Error fetching user:", err);
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +160,7 @@ export const useGetCurrentUser = () => {
     user: currentUser,
     isLoading,
     error,
-    refetch: fetchUser
+    refetch: fetchUser,
   };
 };
 
@@ -183,17 +186,17 @@ export const useGetAllProjects = () => {
       }
 
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Generate dummy projects data
       const projectsData = generateDummyProjects();
-      
+
       // Cache the data
       setProjectsToCache(projectsData);
       setProjects(projectsData);
     } catch (err) {
-      setError('Failed to fetch projects');
-      console.error('Error fetching projects:', err);
+      setError("Failed to fetch projects");
+      console.error("Error fetching projects:", err);
     } finally {
       setIsLoading(false);
     }
@@ -207,7 +210,7 @@ export const useGetAllProjects = () => {
     projects,
     isLoading,
     error,
-    refetch: fetchProjects
+    refetch: fetchProjects,
   };
 };
 
@@ -236,18 +239,20 @@ export const useGetUserProjects = () => {
       }
 
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Filter projects by current user
       const allProjects = generateDummyProjects();
-      const userProjectsData = allProjects.filter(project => project.owner === currentUser.wallet);
-      
+      const userProjectsData = allProjects.filter(
+        (project) => project.owner === currentUser.wallet
+      );
+
       // Cache the data
       setUserProjectsToCache(userProjectsData);
       setUserProjects(userProjectsData);
     } catch (err) {
-      setError('Failed to fetch user projects');
-      console.error('Error fetching user projects:', err);
+      setError("Failed to fetch user projects");
+      console.error("Error fetching user projects:", err);
     } finally {
       setIsLoading(false);
     }
@@ -261,7 +266,7 @@ export const useGetUserProjects = () => {
     projects: userProjects,
     isLoading,
     error,
-    refetch: fetchUserProjects
+    refetch: fetchUserProjects,
   };
 };
 
@@ -290,22 +295,26 @@ export const useGetInvestedProjects = () => {
       }
 
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Get projects based on user investments
       const allProjects = generateDummyProjects();
-      const investedProjectsData = currentUser.investments.map(investment => {
-        return allProjects.find(project => 
-          project.owner === investment.projectOwner && project.index === investment.index
-        );
-      }).filter(Boolean) as Project[];
-      
+      const investedProjectsData = currentUser.investments
+        .map((investment) => {
+          return allProjects.find(
+            (project) =>
+              project.owner === investment.projectOwner &&
+              project.index === investment.index
+          );
+        })
+        .filter(Boolean) as Project[];
+
       // Cache the data
       setInvestedProjectsToCache(investedProjectsData);
       setInvestedProjects(investedProjectsData);
     } catch (err) {
-      setError('Failed to fetch invested projects');
-      console.error('Error fetching invested projects:', err);
+      setError("Failed to fetch invested projects");
+      console.error("Error fetching invested projects:", err);
     } finally {
       setIsLoading(false);
     }
@@ -319,7 +328,7 @@ export const useGetInvestedProjects = () => {
     projects: investedProjects,
     isLoading,
     error,
-    refetch: fetchInvestedProjects
+    refetch: fetchInvestedProjects,
   };
 };
 
@@ -347,21 +356,23 @@ export const useGetSelectedProject = (projectId?: string) => {
       }
 
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       // Find project by ID (in this case, we'll use owner+index as ID)
       const allProjects = generateDummyProjects();
-      const project = allProjects.find(p => `${p.owner}-${p.index}` === projectId);
-      
+      const project = allProjects.find(
+        (p) => `${p.owner}-${p.index}` === projectId
+      );
+
       if (project) {
         setSelectedProjectToCache(project);
         setSelectedProject(project);
       } else {
-        setError('Project not found');
+        setError("Project not found");
       }
     } catch (err) {
-      setError('Failed to fetch project details');
-      console.error('Error fetching project:', err);
+      setError("Failed to fetch project details");
+      console.error("Error fetching project:", err);
     } finally {
       setIsLoading(false);
     }
@@ -375,6 +386,6 @@ export const useGetSelectedProject = (projectId?: string) => {
     project: selectedProject,
     isLoading,
     error,
-    refetch: fetchSelectedProject
+    refetch: fetchSelectedProject,
   };
-}; 
+};
