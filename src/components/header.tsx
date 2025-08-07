@@ -89,9 +89,10 @@ export function Header() {
     setIsMobileMenuOpen(false)
   }
 
-  const formatWalletAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+ const formatWalletAddress = (address: string | null) => {
+  if (!address) return ''
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -142,7 +143,7 @@ export function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {isConnected ? (
+            {isConnected && wallet  ? (
               <div className="flex items-center space-x-4">
                 <Badge variant="outline" className="flex items-center space-x-1">
                   <Wallet className="h-3 w-3" />
@@ -239,7 +240,7 @@ export function Header() {
                 </div>
               </Link>
 
-              {isConnected ? (
+              {isConnected && wallet ?(
                 <div className="flex flex-col space-y-2 pt-4 border-t">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Wallet className="h-4 w-4" />

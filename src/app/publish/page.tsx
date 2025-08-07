@@ -143,6 +143,7 @@ export default function PublishProjectPage() {
   if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8">
+        
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -166,8 +167,10 @@ export default function PublishProjectPage() {
   }
 
   return (
+    <>
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+      
+      <div className="max-w-4xl mx-auto ">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Publish Your Project</h1>
@@ -362,5 +365,6 @@ export default function PublishProjectPage() {
         </form>
       </div>
     </div>
+    </>
   )
 } 
