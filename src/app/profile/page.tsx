@@ -1,0 +1,141 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useAtom } from 'jotai'
+import { currentUserAtom, isUserConnectedAtom } from '@/store/global'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { 
+  User,
+  MapPin,
+  Briefcase,
+  AlertCircle
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
+export default function ProfilePage() {
+  const router = useRouter()
+  const [currentUser] = useAtom(currentUserAtom)
+  const [isConnected] = useAtom(isUserConnectedAtom)
+
+  // Check if user is connected and has user data
+  if (!currentUser) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 h-16 w-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <AlertCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              </div>
+              <CardTitle className="text-2xl">Wallet Connection Required</CardTitle>
+              <CardDescription>
+                Please connect your wallet to view your profile.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button onClick={() => router.push('/')}>
+                Connect Wallet
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Profile</h1>
+            <p className="text-muted-foreground">
+              Manage your profile information and preferences.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>Basic Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <p className="text-lg">{currentUser.name}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Country</label>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{currentUser.country}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Role</label>
+                  <div className="flex items-center space-x-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span>{currentUser.role}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Skills */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Skills</CardTitle>
+                <CardDescription>
+                  Your technical and soft skills
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {currentUser.skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Wallet Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Wallet Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Wallet Address</div>
+                    <div className="font-mono text-sm break-all">{currentUser.wallet}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Projects Created</div>
+                    <div className="text-lg font-semibold">{currentUser.projectCount}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+} 
