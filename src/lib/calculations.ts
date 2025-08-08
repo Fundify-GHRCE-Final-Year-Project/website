@@ -1,4 +1,4 @@
-import { Project, Investment } from '@/types/global';
+import { Project } from '@/types/global';
 
 /**
  * Calculate funding percentage for a project
@@ -32,27 +32,6 @@ export const calculateMilestonePercentages = (milestones: number): number[] => {
 };
 
 /**
- * Calculate total invested amount for a user
- */
-export const calculateTotalInvested = (investments: Investment[]): number => {
-  return investments.reduce((total, investment) => total + investment.amount, 0);
-};
-
-/**
- * Calculate total defunded amount for a user
- */
-export const calculateTotalDefunded = (investments: Investment[]): number => {
-  return investments.reduce((total, investment) => total + investment.defunded, 0);
-};
-
-/**
- * Calculate net investment (invested - defunded)
- */
-export const calculateNetInvestment = (investments: Investment[]): number => {
-  return calculateTotalInvested(investments) - calculateTotalDefunded(investments);
-};
-
-/**
  * Format ETH amount with proper decimals
  */
 export const formatEthAmount = (amount: number): string => {
@@ -82,4 +61,4 @@ export const getProjectStatus = (project: Project): 'active' | 'funded' | 'ended
   if (project.ended) return 'ended';
   if (project.funded >= project.goal) return 'funded';
   return 'active';
-}; 
+};

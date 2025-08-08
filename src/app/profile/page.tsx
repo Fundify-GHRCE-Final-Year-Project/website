@@ -12,14 +12,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Briefcase, AlertCircle } from "lucide-react";
+import { User, MapPin, Briefcase, AlertCircle, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useGetCurrentUser } from "@/lib/hooks";
+import { useGetCurrentUser, useGetUserProjects } from "@/lib/hooks";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isConnected] = useAtom(isUserConnectedAtom);
   const { user } = useGetCurrentUser();
+  const { projects } = useGetUserProjects();
 
   useEffect(() => {
     console.log(user, isConnected);
@@ -119,6 +120,77 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Experiences */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Professional Experience</CardTitle>
+                <CardDescription>
+                  Your work experience and background
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {user.experiences.map((experience, index) => (
+                    <div key={index} className="border-l-2 border-muted pl-4">
+                      <h4 className="font-semibold">{experience.role}</h4>
+                      <p className="text-muted-foreground">{experience.company}</p>
+                      <p className="text-sm text-muted-foreground">{experience.duration}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Social Links</CardTitle>
+                <CardDescription>
+                  Your professional and social media profiles
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">LinkedIn</span>
+                    <a 
+                      href={user.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <span className="text-sm">View Profile</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">X (Twitter)</span>
+                    <a 
+                      href={user.x} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <span className="text-sm">View Profile</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">GitHub</span>
+                    <a 
+                      href={user.github} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <span className="text-sm">View Profile</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
@@ -143,7 +215,7 @@ export default function ProfilePage() {
                       Projects Created
                     </div>
                     <div className="text-lg font-semibold">
-                      {user.projectCount}
+                      {projects?.length || 0}
                     </div>
                   </div>
                 </div>

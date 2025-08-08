@@ -21,14 +21,9 @@ export const successMessageAtom = atom<string | null>(null);
 export const currentPageAtom = atom<string>('projects');
 
 // Derived atoms
-export const hasInvestmentsAtom = atom((get) => {
-  const user = get(currentUserAtom);
-  return user?.investments && user.investments.length > 0;
-});
-
 export const hasProjectsAtom = atom((get) => {
-  const user = get(currentUserAtom);
-  return user?.projectCount && user.projectCount > 0;
+  const userProjects = get(userProjectsAtom);
+  return userProjects && userProjects.length > 0;
 });
 
 export const projectsLoadingAtom = atom((get) => {
@@ -48,4 +43,4 @@ export const userProfileCompleteAtom = atom((get) => {
     user.x &&
     user.github
   );
-}); 
+});

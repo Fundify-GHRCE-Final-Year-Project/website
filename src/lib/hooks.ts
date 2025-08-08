@@ -31,21 +31,6 @@ export const generateDummyUser = (wallet: string): User => ({
   wallet,
   name: "John Doe",
   country: "United States",
-  investments: [
-    {
-      projectOwner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-      index: 1,
-      amount: 2.5,
-      defunded: 0.5,
-    },
-    {
-      projectOwner: "0x1234567890123456789012345678901234567890",
-      index: 2,
-      amount: 1.8,
-      defunded: 0,
-    },
-  ],
-  projectCount: 3,
   role: "Software Developer",
   skills: ["React", "TypeScript", "Node.js", "Solidity", "Web3"],
   experiences: [
@@ -74,7 +59,6 @@ const generateDummyProjects = (): Project[] => [
     milestones: 3,
     funded: 35,
     released: 15,
-    defunded: 5,
     ended: false,
     title: "DeFi Lending Platform",
     description:
@@ -88,7 +72,6 @@ const generateDummyProjects = (): Project[] => [
     milestones: 2,
     funded: 25,
     released: 12.5,
-    defunded: 0,
     ended: false,
     title: "NFT Marketplace",
     description:
@@ -102,7 +85,6 @@ const generateDummyProjects = (): Project[] => [
     milestones: 4,
     funded: 75,
     released: 25,
-    defunded: 10,
     ended: false,
     title: "DAO Governance Platform",
     description:
@@ -280,7 +262,7 @@ export const useGetInvestedProjects = () => {
   const [currentUser] = useAtom(currentUserAtom);
 
   const fetchInvestedProjects = async () => {
-    if (!currentUser?.investments) return;
+    if (!currentUser) return;
 
     setIsLoading(true);
     setError(null);
@@ -297,17 +279,13 @@ export const useGetInvestedProjects = () => {
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Get projects based on user investments
+      // For dummy data, since User type doesn't have investments field,
+      // we'll create a mock scenario where user has invested in some projects
       const allProjects = generateDummyProjects();
-      const investedProjectsData = currentUser.investments
-        .map((investment) => {
-          return allProjects.find(
-            (project) =>
-              project.owner === investment.projectOwner &&
-              project.index === investment.index
-          );
-        })
-        .filter(Boolean) as Project[];
+      // Mock: assume user has invested in projects with indices 1 and 2
+      const investedProjectsData = allProjects.filter(
+        (project) => project.index === 1 || project.index === 2
+      );
 
       // Cache the data
       setInvestedProjectsToCache(investedProjectsData);

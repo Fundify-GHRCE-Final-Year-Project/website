@@ -6,7 +6,6 @@ import {
   isUserConnectedAtom, 
   userWalletAtom, 
   currentUserAtom,
-  hasInvestmentsAtom,
   hasProjectsAtom
 } from '@/store/global'
 import { Button } from '@/components/ui/button'
@@ -28,7 +27,6 @@ export function Header() {
   const [isConnected, setIsConnected] = useAtom(isUserConnectedAtom)
   const [wallet, setWallet] = useAtom(userWalletAtom)
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
-  const [hasInvestments] = useAtom(hasInvestmentsAtom)
   const [hasProjects] = useAtom(hasProjectsAtom)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -45,15 +43,6 @@ export function Header() {
         wallet: mockWallet,
         name: 'John Doe',
         country: 'United States',
-        investments: [
-          {
-            projectOwner: '0x1234567890123456789012345678901234567890',
-            index: 1,
-            amount: 2.5,
-            defunded: 0
-          }
-        ],
-        projectCount: 3,
         role: 'Software Developer',
         skills: ['JavaScript', 'React', 'TypeScript', 'Node.js', 'Blockchain'],
         experiences: [
@@ -115,7 +104,7 @@ export function Header() {
               Projects
             </Link>
             
-            {hasInvestments && (
+            {isConnected && (
               <Link 
                 href="/invested-projects" 
                 className="text-sm font-medium transition-colors hover:text-primary"
@@ -203,7 +192,7 @@ export function Header() {
                 </div>
               </Link>
               
-              {hasInvestments && (
+              {isConnected && (
                 <Link 
                   href="/invested-projects" 
                   className="text-sm font-medium transition-colors hover:text-primary"
@@ -276,4 +265,4 @@ export function Header() {
       </div>
     </header>
   )
-} 
+}

@@ -77,7 +77,7 @@ export default function MyProjectsPage() {
                 <FolderOpen className="h-5 w-5" />
                 <span className="text-sm font-medium">Total Projects</span>
               </div>
-              <div className="text-2xl font-bold">{currentUser.projectCount}</div>
+              <div className="text-2xl font-bold">{filteredProjects.length}</div>
             </div>
             
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
@@ -85,7 +85,7 @@ export default function MyProjectsPage() {
                 <TrendingUp className="h-5 w-5" />
                 <span className="text-sm font-medium">Active Projects</span>
               </div>
-              <div className="text-2xl font-bold">{filteredProjects.length}</div>
+              <div className="text-2xl font-bold">{filteredProjects.filter(p => !p.ended).length}</div>
             </div>
             
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
@@ -200,4 +200,4 @@ export default function MyProjectsPage() {
       )}
     </div>
   )
-} 
+}

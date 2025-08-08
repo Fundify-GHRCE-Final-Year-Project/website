@@ -114,18 +114,18 @@ export default function PublishProjectPage() {
 
       // Create project data
       const projectData = {
-        owner: currentUser.wallet,
-        members: formData.members.filter(m => m.trim()),
-        index: currentUser.projectCount + 1,
-        goal: parseFloat(formData.goal),
-        milestones: parseInt(formData.milestones),
-        funded: 0,
-        released: 0,
-        defunded: 0,
-        ended: false,
-        title: formData.title.trim(),
-        description: formData.description.trim()
-      }
+  owner: String(currentUser.wallet || '').trim(),
+  members: formData.members.filter(m => m.trim()).map(m => m.trim()),
+  index: Math.floor(Math.random() * 10000) + 1,
+  goal: parseFloat(formData.goal),
+  milestones: parseInt(formData.milestones),
+  funded: 0,
+  released: 0,
+  ended: false,
+  title: formData.title.trim(),
+  description: formData.description.trim()
+}
+
 
       // Validate with Zod schema
       ProjectSchema.parse(projectData)
@@ -367,4 +367,4 @@ export default function PublishProjectPage() {
     </div>
     </>
   )
-} 
+}
