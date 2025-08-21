@@ -1,3 +1,4 @@
+// app/invested-projects/page.tsx (Updated version)
 'use client'
 
 import { useGetInvestedProjects } from '@/lib/hooks'
@@ -5,6 +6,7 @@ import { ProjectCard } from '@/components/project-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { 
   Search, 
   Grid3X3, 
@@ -12,26 +14,78 @@ import {
   Loader2,
   AlertCircle,
   TrendingUp,
-  Wallet
+  Wallet,
+  BarChart3
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAtom } from 'jotai'
 import { currentUserAtom } from '@/store/global'
 
 export default function InvestedProjectsPage() {
-  const { projects, isLoading, error } = useGetInvestedProjects()
+  const { projects, investments, isLoading, error } = useGetInvestedProjects()
   const [currentUser] = useAtom(currentUserAtom)
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  const filteredProjects = projects?.filter(project => {
-    return project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           project.description.toLowerCase().includes(searchTerm.toLowerCase())
-  }) || []
+  const filteredProjects = projects?.filter((project: any) => {
+    const title = (project.title ?? '').toLowerCase();
+    const description = (project.description ?? '').toLowerCase();
+    const owner = (project.owner ?? '').toLowerCase();
+    const indexStr = String(project.index ?? '');
+    const term = searchTerm.toLowerCase();
+    return (
+      title.includes(term) ||
+      description.includes(term) ||
+      owner.includes(term) ||
+      indexStr.includes(term)
+    );
+  }) || [];
 
-  // Since User type doesn't have investments field, we'll use mock data for display
-  const totalInvested = 4.3 // Mock total invested amount
-  const netInvestment = 4.1 // Mock net investment amount
+  // Calculate investment statistics
+  const investmentStats = useMemo(() => {
+    if (!investments || investments.length === 0) {
+      return {
+        totalInvested: 0,
+        totalInvestments: 0,
+        averageInvestment: 0
+      };
+    }
+
+    const total = investments.reduce((sum, inv) => {
+      try {
+        // Convert BigInt string to ETH
+        const ethAmount = parseFloat(inv.amount) / Math.pow(10, 18);
+        return sum + ethAmount;
+      } catch {
+        return sum;
+      }
+    }, 0);
+
+    return {
+      totalInvested: total,
+      totalInvestments: investments.length,
+      averageInvestment: total / investments.length
+    };
+  }, [investments]);
+
+  const formatAddress = (address: string) => {
+    if (!address) return 'Unknown';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  if (!currentUser?.wallet) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <Wallet className="h-12 w-12 text-muted-foreground" />
+          <h2 className="text-2xl font-semibold">Wallet Not Connected</h2>
+          <p className="text-muted-foreground text-center max-w-md">
+            Please connect your wallet to view your invested projects.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -61,74 +115,91 @@ export default function InvestedProjectsPage() {
       </div>
 
       {/* Investment Summary */}
-      {filteredProjects.length > 0 && (
+      {!isLoading && (investments?.length || 0) > 0 && (
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-              <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="h-5 w-5" />
-                <span className="text-sm font-medium">Total Invested</span>
-              </div>
-              <div className="text-2xl font-bold">{totalInvested.toFixed(2)} ETH</div>
-            </div>
+            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <TrendingUp className="h-5 w-5" />
+                  <span className="text-sm font-medium">Total Invested</span>
+                </div>
+                <div className="text-2xl font-bold">
+                  {investmentStats.totalInvested.toFixed(4)} ETH
+                </div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-              <div className="flex items-center space-x-2 mb-2">
-                <Wallet className="h-5 w-5" />
-                <span className="text-sm font-medium">Net Investment</span>
-              </div>
-              <div className="text-2xl font-bold">{netInvestment.toFixed(2)} ETH</div>
-            </div>
+            <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <BarChart3 className="h-5 w-5" />
+                  <span className="text-sm font-medium">Total Investments</span>
+                </div>
+                <div className="text-2xl font-bold">{investmentStats.totalInvestments}</div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-              <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="h-5 w-5" />
-                <span className="text-sm font-medium">Active Projects</span>
-              </div>
-              <div className="text-2xl font-bold">{filteredProjects.length}</div>
-            </div>
+            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Wallet className="h-5 w-5" />
+                  <span className="text-sm font-medium">Active Projects</span>
+                </div>
+                <div className="text-2xl font-bold">{filteredProjects.length}</div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
 
       {/* Search and Filters */}
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search invested projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
+      {!isLoading && (
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search invested projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Results Count */}
-      <div className="mb-6">
-        <p className="text-sm text-muted-foreground">
-          {isLoading ? 'Loading invested projects...' : `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''} found`}
-        </p>
-      </div>
+      {!isLoading && (
+        <div className="mb-6">
+          <p className="text-sm text-muted-foreground">
+            {`${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''} found`}
+            {investments && investments.length > 0 && (
+              <span className="ml-2">
+                • {investments.length} total investment{investments.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Loading State */}
       {isLoading && (
@@ -147,13 +218,79 @@ export default function InvestedProjectsPage() {
             ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
             : 'space-y-4'
         }>
-          {filteredProjects.map((project) => (
-            <ProjectCard 
-              key={`${project.owner}-${project.index}`}
-              project={project}
-              viewMode={viewMode}
-            />
-          ))}
+          {filteredProjects.map((project) => {
+            // Find user's investments in this project
+            const userInvestments = investments?.filter(inv => 
+              inv.projectOwner.toLowerCase() === project.owner.toLowerCase() && 
+              inv.projectIndex === project.index
+            ) || [];
+            
+            const totalUserInvestment = userInvestments.reduce((sum, inv) => {
+              try {
+                const ethAmount = parseFloat(inv.amount) / Math.pow(10, 18);
+                return sum + ethAmount;
+              } catch {
+                return sum;
+              }
+            }, 0);
+
+            return (
+              <div key={`${project.owner}-${project.index}`} className="relative">
+                <ProjectCard 
+                  project={project}
+                  viewMode={viewMode}
+                />
+                {/* Investment Badge */}
+                <div className="absolute top-2 right-2">
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-green-100 text-green-800 border-green-200"
+                  >
+                    Invested: {totalUserInvestment.toFixed(4)} ETH
+                  </Badge>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Investment History Section */}
+      {!isLoading && investments && investments.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-semibold mb-6">Investment History</h2>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {investments
+              .sort((a, b) => b.timestamp - a.timestamp) // Sort by newest first
+              .slice(0, 10) // Show only recent 10 investments
+              .map((investment) => (
+                <Card key={`${investment.funder}-${investment.investmentIndex}`}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Wallet className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          Project by {formatAddress(investment.projectOwner)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Project #{investment.projectIndex} • {new Date(investment.timestamp * 1000).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">
+                        {(parseFloat(investment.amount) / Math.pow(10, 18)).toFixed(4)} ETH
+                      </p>
+                      <Badge variant="outline" className="text-xs">
+                        Investment #{investment.investmentIndex}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
         </div>
       )}
 

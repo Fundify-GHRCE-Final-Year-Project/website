@@ -1,52 +1,93 @@
-"use client";
+// src/app/profile/page.tsx
+'use client'
 
-import { useState, useEffect } from "react";
-import { useAtom } from "jotai";
-import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Briefcase, AlertCircle, ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useGetCurrentUser, useGetUserProjects } from "@/lib/hooks";
+import { useAtom } from 'jotai'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { currentUserAtom, isUserConnectedAtom } from '@/store/global'
+import { useGetUserProjects } from '@/lib/hooks'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { 
+  User, 
+  Wallet, 
+  MapPin, 
+  Briefcase, 
+  Github, 
+  Linkedin, 
+  Twitter,
+  Mail,
+  Calendar,
+  TrendingUp,
+  FolderOpen,
+  DollarSign,
+  Edit,
+  ExternalLink
+} from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isConnected] = useAtom(isUserConnectedAtom);
-  const { user } = useGetCurrentUser();
+  const [currentUser] = useAtom(currentUserAtom); // Use atom instead of hook
   const { projects } = useGetUserProjects();
 
   useEffect(() => {
-    console.log(user, isConnected);
-  }, [user, isConnected]);
+    if (!isConnected || !currentUser) {
+      router.push('/');
+    }
+  }, [isConnected, currentUser, router]);
 
-  // Check if user is connected and has user data
-  if (!user || !isConnected) {
+  const formatAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const calculateProjectStats = () => {
+    if (!projects || projects.length === 0) {
+      return {
+        totalProjects: 0,
+        totalFunded: 0,
+        totalGoal: 0,
+        fundingPercentage: 0
+      };
+    }
+
+    const totalFunded = projects.reduce((sum, project) => {
+      try {
+        return sum + (parseFloat(project.funded) / Math.pow(10, 18));
+      } catch {
+        return sum;
+      }
+    }, 0);
+
+    const totalGoal = projects.reduce((sum, project) => {
+      try {
+        return sum + (parseFloat(project.goal) / Math.pow(10, 18));
+      } catch {
+        return sum;
+      }
+    }, 0);
+
+    return {
+      totalProjects: projects.length,
+      totalFunded,
+      totalGoal,
+      fundingPercentage: totalGoal > 0 ? (totalFunded / totalGoal) * 100 : 0
+    };
+  };
+
+  const stats = calculateProjectStats();
+
+  if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 h-16 w-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <AlertCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <CardTitle className="text-2xl">
-                Wallet Connection Required
-              </CardTitle>
-              <CardDescription>
-                Please connect your wallet to view your profile.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <Button onClick={() => router.push("/")}>Connect Wallet</Button>
-            </CardContent>
-          </Card>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">No User Data</h2>
+            <p className="text-muted-foreground">Please connect your wallet to view profile.</p>
+          </div>
         </div>
       </div>
     );
@@ -54,174 +95,279 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Profile</h1>
-            <p className="text-muted-foreground">
-              Manage your profile information and preferences.
-            </p>
-          </div>
+      {/* Header */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Profile</h1>
+          <p className="text-muted-foreground">
+            Manage your account and view your activity on Fundiy.
+          </p>
+        </div>
+        <Button onClick={() => router.push('/profile/edit')}>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit Profile
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Information */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-12 w-12 text-primary" />
+              </div>
+              <CardTitle className="text-xl">
+                {currentUser.name || 'Anonymous User'}
+              </CardTitle>
+              <CardDescription>
+                {formatAddress(currentUser.wallet)}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {/* Basic Info */}
+              {/* {currentUser.email && (
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{currentUser.email}</span>
+                </div>
+              )} */}
+              
+              {currentUser.country && (
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{currentUser.country}</span>
+                </div>
+              )}
+              
+              {currentUser.role && (
+                <div className="flex items-center space-x-3">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <Badge variant="secondary">{currentUser.role}</Badge>
+                </div>
+              )}
+
+              {/* Skills */}
+              {currentUser.skills && currentUser.skills.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentUser.skills.map((skill, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Social Links */}
+              <div className="space-y-2">
+                {currentUser.github && (
+                  <a 
+                    href={currentUser.github} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
+                  >
+                    <Github className="h-4 w-4" />
+                    <span>GitHub</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                
+                {currentUser.linkedin && (
+                  <a 
+                    href={currentUser.linkedin} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    <span>LinkedIn</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                
+                {currentUser.x && (
+                  <a 
+                    href={currentUser.x} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
+                  >
+                    <Twitter className="h-4 w-4" />
+                    <span>X (Twitter)</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+
+              {/* Join Date */}
+              {/* {currentUser.createdAt && (
+                <div className="flex items-center space-x-3 pt-4 border-t">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )} */}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
+        {/* Activity and Stats */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Project Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>Basic Information</span>
-                </CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+                <FolderOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <p className="text-lg">{user.name}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Country
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{user.country}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Role</label>
-                  <div className="flex items-center space-x-2">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>{user.role}</span>
-                  </div>
-                </div>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalProjects}</div>
+                <p className="text-xs text-muted-foreground">
+                  Active projects created
+                </p>
               </CardContent>
             </Card>
 
-            {/* Skills */}
             <Card>
-              <CardHeader>
-                <CardTitle>Skills</CardTitle>
-                <CardDescription>
-                  Your technical and soft skills
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Funds Raised</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {user.skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+                <div className="text-2xl font-bold">{stats.totalFunded.toFixed(3)} ETH</div>
+                <p className="text-xs text-muted-foreground">
+                  Total funding received
+                </p>
               </CardContent>
             </Card>
 
-            {/* Experiences */}
             <Card>
-              <CardHeader>
-                <CardTitle>Professional Experience</CardTitle>
-                <CardDescription>
-                  Your work experience and background
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
+                <div className="text-2xl font-bold">{stats.fundingPercentage.toFixed(1)}%</div>
+                <p className="text-xs text-muted-foreground">
+                  Average funding progress
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Projects */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Projects</CardTitle>
+              <CardDescription>
+                Your latest project activities
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {projects && projects.length > 0 ? (
                 <div className="space-y-4">
-                  {user.experiences.map((experience, index) => (
-                    <div key={index} className="border-l-2 border-muted pl-4">
-                      <h4 className="font-semibold">{experience.role}</h4>
-                      <p className="text-muted-foreground">{experience.company}</p>
-                      <p className="text-sm text-muted-foreground">{experience.duration}</p>
+                  {projects.slice(0, 3).map((project) => (
+                    <div 
+                      key={`${project.owner}-${project.index}`}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div>
+                        <h4 className="font-medium">
+                          {project.title || `Project #${project.index}`}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {project.description ? 
+                            project.description.slice(0, 60) + '...' : 
+                            'No description available'
+                          }
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {(parseFloat(project.funded) / Math.pow(10, 18)).toFixed(3)} ETH
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          of {(parseFloat(project.goal) / Math.pow(10, 18)).toFixed(3)} ETH
+                        </p>
+                      </div>
                     </div>
                   ))}
+                  
+                  {projects.length > 3 && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-4"
+                      onClick={() => router.push('/my-projects')}
+                    >
+                      View All Projects ({projects.length})
+                    </Button>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <div className="text-center py-8">
+                  <FolderOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-4">
+                    You haven't created any projects yet.
+                  </p>
+                  <Button onClick={() => router.push('/create-project')}>
+                    Create Your First Project
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            {/* Social Links */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Social Links</CardTitle>
-                <CardDescription>
-                  Your professional and social media profiles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">LinkedIn</span>
-                    <a 
-                      href={user.linkedin} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
-                    >
-                      <span className="text-sm">View Profile</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">X (Twitter)</span>
-                    <a 
-                      href={user.x} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
-                    >
-                      <span className="text-sm">View Profile</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">GitHub</span>
-                    <a 
-                      href={user.github} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
-                    >
-                      <span className="text-sm">View Profile</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Wallet Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Wallet Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-sm text-muted-foreground">
-                      Wallet Address
-                    </div>
-                    <div className="font-mono text-sm break-all">
-                      {user.wallet}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">
-                      Projects Created
-                    </div>
-                    <div className="text-lg font-semibold">
-                      {projects?.length || 0}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/create-project')}
+                  className="h-12"
+                >
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Create New Project
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/my-projects')}
+                  className="h-12"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  View My Projects
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/invested-projects')}
+                  className="h-12"
+                >
+                  <Wallet className="h-4 w-4 mr-2" />
+                  My Investments
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/projects')}
+                  className="h-12"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Browse Projects
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

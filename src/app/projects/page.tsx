@@ -5,34 +5,85 @@ import { ProjectCard } from '@/components/project-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { 
   Search, 
   Filter, 
   Grid3X3, 
   List,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  TrendingUp,
+  Target,
+  Clock,
+  CheckCircle
 } from 'lucide-react'
-import { useState } from 'react'
-import { Project } from '@/types/global'
+import { useState, useEffect, useMemo } from 'react'
 
 export default function ProjectsPage() {
-  const { projects, isLoading, error } = useGetAllProjects()
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'funded' | 'ended'>('all')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  const filteredProjects = projects?.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase())
+  // Debounce search term to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const { projects, meta, isLoading, error } = useGetAllProjects({
+    search: debouncedSearch,
+    status: statusFilter,
+    limit: 50,
+    offset: 0
+  })
+
+  // Client-side filtering as backup (in case API doesn't handle all filters)
+  const filteredProjects = useMemo(() => {
+    if (!projects) return []
     
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && !project.ended && project.funded < project.goal) ||
-                         (statusFilter === 'funded' && project.funded >= project.goal) ||
-                         (statusFilter === 'ended' && project.ended)
+    return projects.filter(project => {
+      // Search filter (backup - API should handle this)
+      const matchesSearch = !searchTerm || 
+        (project.title && project.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (project.owner && project.owner.toLowerCase().includes(searchTerm.toLowerCase()))
+      
+      // Status filter (backup - API should handle this)
+      let matchesStatus = true
+      if (statusFilter === 'active') {
+        matchesStatus = !project.isFullyFunded && project.fundingPercentage < 100
+      } else if (statusFilter === 'funded') {
+        matchesStatus = project.isFullyFunded || project.fundingPercentage >= 100
+      } else if (statusFilter === 'ended') {
+        // Consider a project ended if it's old or reached goal
+        const isOld = Date.now() / 1000 - project.timestamp > 90 * 24 * 60 * 60 // 90 days old
+        matchesStatus = isOld || project.isFullyFunded
+      }
+      
+      return matchesSearch && matchesStatus
+    })
+  }, [projects, searchTerm, statusFilter])
+
+  const projectStats = useMemo(() => {
+    if (!projects || projects.length === 0) return null
     
-    return matchesSearch && matchesStatus
-  }) || []
+    const totalProjects = projects.length
+    const activeProjects = projects.filter(p => !p.isFullyFunded).length
+    const fundedProjects = projects.filter(p => p.isFullyFunded).length
+    const totalFunding = projects.reduce((sum, p) => sum + (p.fundedETH || 0), 0)
+    
+    return {
+      total: totalProjects,
+      active: activeProjects,
+      funded: fundedProjects,
+      totalFunding
+    }
+  }, [projects])
 
   if (error) {
     return (
@@ -60,6 +111,53 @@ export default function ProjectsPage() {
           Explore innovative projects and support creators with cryptocurrency funding.
         </p>
       </div>
+
+      {/* Project Statistics */}
+      {projectStats && !isLoading && (
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm font-medium">Total Projects</span>
+                </div>
+                <div className="text-2xl font-bold mt-2">{projectStats.total}</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-medium">Active</span>
+                </div>
+                <div className="text-2xl font-bold mt-2">{projectStats.active}</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium">Funded</span>
+                </div>
+                <div className="text-2xl font-bold mt-2">{projectStats.funded}</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Target className="h-4 w-4 text-purple-500" />
+                  <span className="text-sm font-medium">Total Raised</span>
+                </div>
+                <div className="text-2xl font-bold mt-2">{projectStats.totalFunding.toFixed(2)} ETH</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
@@ -99,6 +197,7 @@ export default function ProjectsPage() {
             onClick={() => setStatusFilter('all')}
           >
             All Projects
+            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.total}</Badge>}
           </Button>
           <Button
             variant={statusFilter === 'active' ? 'default' : 'outline'}
@@ -106,6 +205,7 @@ export default function ProjectsPage() {
             onClick={() => setStatusFilter('active')}
           >
             Active
+            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.active}</Badge>}
           </Button>
           <Button
             variant={statusFilter === 'funded' ? 'default' : 'outline'}
@@ -113,6 +213,7 @@ export default function ProjectsPage() {
             onClick={() => setStatusFilter('funded')}
           >
             Funded
+            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.funded}</Badge>}
           </Button>
           <Button
             variant={statusFilter === 'ended' ? 'default' : 'outline'}
@@ -127,7 +228,17 @@ export default function ProjectsPage() {
       {/* Results Count */}
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">
-          {isLoading ? 'Loading projects...' : `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''} found`}
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Loading projects...
+            </span>
+          ) : (
+            `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''} found`
+          )}
+          {meta && meta.total && (
+            <span className="ml-2">• Total: {meta.total} projects</span>
+          )}
         </p>
       </div>
 
@@ -155,6 +266,15 @@ export default function ProjectsPage() {
               viewMode={viewMode}
             />
           ))}
+        </div>
+      )}
+
+      {/* Load More Button */}
+      {!isLoading && meta?.hasMore && (
+        <div className="flex justify-center mt-8">
+          <Button variant="outline">
+            Load More Projects
+          </Button>
         </div>
       )}
 
@@ -186,4 +306,4 @@ export default function ProjectsPage() {
       )}
     </div>
   )
-} 
+}

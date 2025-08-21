@@ -21,18 +21,17 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useEffect } from "react";
-import { generateDummyUser } from "@/lib/hooks";
 import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
 import { useSetAtom } from "jotai";
 
 export default function HomePage() {
   const setUser = useSetAtom(currentUserAtom);
   const setIsConnected = useSetAtom(isUserConnectedAtom);
-  useEffect(() => {
-    const user = generateDummyUser("0x");
-    setUser(user);
-    setIsConnected(true);
-  }, []);
+  // useEffect(() => {
+  //   const user = generateDummyUser("0x");
+  //   setUser(user);
+  //   setIsConnected(true);
+  // }, []);
 
   return (
     <div className="min-h-screen">
