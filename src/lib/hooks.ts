@@ -4,6 +4,8 @@ import { useAtom } from 'jotai';
 import { currentUserAtom } from '@/store/global';
 import { useEffect, useMemo, useState } from 'react';
 
+
+
 type InvestmentDTO = {
   funder: string;
   investmentIndex: number;

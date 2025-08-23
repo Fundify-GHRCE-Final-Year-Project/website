@@ -1,10 +1,28 @@
 import { atom } from 'jotai';
 import { User, Project } from '@/types/global';
 
-// User state
-export const currentUserAtom = atom<User | null>(null);
+// Hardcoded user
+const hardcodedUser: User = {
+  wallet: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+  name: "Kartik Turak",
+  country: "India",
+  role: "Developer",
+  skills: ["React", "Node.js", "Blockchain"],
+  linkedin: "https://linkedin.com/in/kartik",
+  x: "https://twitter.com/kartik",
+  github: "https://github.com/kartikturak05",
+  experiences: [], // Add an empty array or sample experiences as required by your User type
+};
+
+// // User state
+// export const currentUserAtom = atom<User | null>(null);
+// export const isUserConnectedAtom = atom<boolean>(true);
+// export const userWalletAtom = atom<string | null>(null);
+
+// User state (returns hardcoded data instead of null)
+export const currentUserAtom = atom<User | null>(hardcodedUser);
 export const isUserConnectedAtom = atom<boolean>(true);
-export const userWalletAtom = atom<string | null>(null);
+export const userWalletAtom = atom<string | null>(hardcodedUser.wallet);
 
 // Projects state
 export const allProjectsAtom = atom<Project[]>([]);
@@ -35,6 +53,7 @@ export const userProfileCompleteAtom = atom((get) => {
   if (!user) return false;
   
   return !!(
+    user.wallet &&
     user.name &&
     user.country &&
     user.role &&

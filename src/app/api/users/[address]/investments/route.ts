@@ -21,7 +21,7 @@ export async function GET(
 
     // Find all investments by this user
     const investments = await InvestmentModel.find({ 
-      funder: address.toLowerCase() 
+      funder: new RegExp(`^${address}$`, 'i') // case-insensitive match
     }).sort({ timestamp: -1 });
 
     // Get unique projects and populate them

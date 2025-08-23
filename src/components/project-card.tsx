@@ -11,18 +11,18 @@ import {
   User,
   ExternalLink
 } from 'lucide-react'
-import Link from 'next/link'
 
+// Updated interface to match API response
 interface Project {
   id: string
   owner: string
   index: number
   title: string
   description: string
+  goal?: number
   goalETH: number
+  funded?: number
   fundedETH: number
-  fundingPercentage: number
-  isFullyFunded: boolean
   milestones: number
   timestamp: number
 }
@@ -33,6 +33,17 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
+  // Safely calculate funding percentage with fallbacks
+  const calculateFundingPercentage = () => {
+    if (!project.goalETH || project.goalETH === 0) return 0;
+    const funded = project.fundedETH || 0;
+    const goal = project.goalETH;
+    return Math.min((funded / goal) * 100, 100);
+  };
+
+  const fundingPercentage = calculateFundingPercentage();
+  const isFullyFunded = fundingPercentage >= 100;
+  
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString()
   }
@@ -42,8 +53,12 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
   }
 
   const handleViewProject = () => {
-    // You can navigate to project detail page here
     console.log('View project:', project)
+  }
+
+  // Safe number formatting with fallbacks
+  const safeToFixed = (num: number | undefined, decimals: number = 2): string => {
+    return (num || 0).toFixed(decimals);
   }
 
   if (viewMode === 'list') {
@@ -54,8 +69,8 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-3 mb-2">
                 <h3 className="text-lg font-semibold truncate">{project.title}</h3>
-                <Badge variant={project.isFullyFunded ? 'default' : 'secondary'}>
-                  {project.isFullyFunded ? 'Funded' : 'Active'}
+                <Badge variant={isFullyFunded ? 'default' : 'secondary'}>
+                  {isFullyFunded ? 'Funded' : 'Active'}
                 </Badge>
               </div>
               
@@ -70,11 +85,11 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Target className="h-4 w-4" />
-                  <span>{project.goalETH.toFixed(2)} ETH</span>
+                  <span>{safeToFixed(project.goalETH)} ETH</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <TrendingUp className="h-4 w-4" />
-                  <span>{project.fundedETH.toFixed(2)} ETH</span>
+                  <span>{safeToFixed(project.fundedETH)} ETH</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Calendar className="h-4 w-4" />
@@ -86,9 +101,9 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
             <div className="flex items-center space-x-4 ml-6">
               <div className="text-right">
                 <div className="text-sm font-medium">
-                  {project.fundingPercentage.toFixed(1)}% Funded
+                  {safeToFixed(fundingPercentage, 1)}% Funded
                 </div>
-                <Progress value={project.fundingPercentage} className="w-24 mt-1" />
+                <Progress value={fundingPercentage} className="w-24 mt-1" />
               </div>
               
               <Button size="sm" onClick={handleViewProject}>
@@ -106,8 +121,8 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg line-clamp-2">{project.title}</CardTitle>
-          <Badge variant={project.isFullyFunded ? 'default' : 'secondary'}>
-            {project.isFullyFunded ? 'Funded' : 'Active'}
+          <Badge variant={isFullyFunded ? 'default' : 'secondary'}>
+            {isFullyFunded ? 'Funded' : 'Active'}
           </Badge>
         </div>
       </CardHeader>
@@ -120,25 +135,25 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Goal</span>
-            <span className="font-medium">{project.goalETH.toFixed(2)} ETH</span>
+            <span className="font-medium">{safeToFixed(project.goalETH)} ETH</span>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Funded</span>
-            <span className="font-medium">{project.fundedETH.toFixed(2)} ETH</span>
+            <span className="font-medium">{safeToFixed(project.fundedETH)} ETH</span>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{project.fundingPercentage.toFixed(1)}%</span>
+              <span className="font-medium">{safeToFixed(fundingPercentage, 1)}%</span>
             </div>
-            <Progress value={project.fundingPercentage} />
+            <Progress value={fundingPercentage} />
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Milestones</span>
-            <span className="font-medium">{project.milestones}</span>
+            <span className="font-medium">{project.milestones || 0}</span>
           </div>
 
           <div className="flex items-center justify-between text-sm">

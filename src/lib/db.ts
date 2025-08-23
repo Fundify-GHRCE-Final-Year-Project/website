@@ -12,7 +12,7 @@ export async function dbConnect() {
 
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI!, {
-      dbName: "test", // Use "test" since that's where your data is
+      dbName: "indexed_data", // Use "test" since that's where your data is
     });
     isConnected = true;
     console.log("MongoDB connected:", conn.connection.host);
