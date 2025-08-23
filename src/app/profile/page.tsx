@@ -23,14 +23,28 @@ import {
   FolderOpen,
   DollarSign,
   Edit,
-  ExternalLink
+  ExternalLink,
+  Loader2,
+  AlertCircle
 } from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isConnected] = useAtom(isUserConnectedAtom);
-  const [currentUser] = useAtom(currentUserAtom); // Use atom instead of hook
-  const { projects } = useGetUserProjects();
+  const [currentUser] = useAtom(currentUserAtom);
+  const { projects, isLoading, error } = useGetUserProjects();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Profile Debug:', {
+      isConnected,
+      currentUser,
+      userWallet: currentUser?.wallet,
+      projects,
+      isLoading,
+      error
+    });
+  }, [isConnected, currentUser, projects, isLoading, error]);
 
   useEffect(() => {
     if (!isConnected || !currentUser) {
@@ -126,14 +140,6 @@ export default function ProfilePage() {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              {/* Basic Info */}
-              {/* {currentUser.email && (
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{currentUser.email}</span>
-                </div>
-              )} */}
-              
               {currentUser.country && (
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -203,22 +209,26 @@ export default function ProfilePage() {
                   </a>
                 )}
               </div>
-
-              {/* Join Date */}
-              {/* {currentUser.createdAt && (
-                <div className="flex items-center space-x-3 pt-4 border-t">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    Joined {new Date(currentUser.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              )} */}
             </CardContent>
           </Card>
         </div>
 
         {/* Activity and Stats */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Debug Info Card - Remove this in production */}
+          {/* <Card className="border-orange-200 bg-orange-50/50">
+            <CardHeader>
+              <CardTitle className="text-sm text-orange-800">Debug Info (Remove in production)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs space-y-1 text-orange-700">
+              <div>User Wallet: {currentUser?.wallet || 'Not found'}</div>
+              <div>Projects Loading: {isLoading ? 'Yes' : 'No'}</div>
+              <div>Projects Count: {projects?.length || 0}</div>
+              <div>Error: {error || 'None'}</div>
+              <div>Projects Data: {JSON.stringify(projects?.slice(0, 2), null, 2)}</div>
+            </CardContent>
+          </Card> */}
+
           {/* Project Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -270,7 +280,17 @@ export default function ProfilePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {projects && projects.length > 0 ? (
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Loading your projects...</span>
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center py-8 text-red-500">
+                  <AlertCircle className="h-6 w-6 mr-2" />
+                  <span>Error loading projects: {error}</span>
+                </div>
+              ) : projects && projects.length > 0 ? (
                 <div className="space-y-4">
                   {projects.slice(0, 3).map((project) => (
                     <div 
@@ -290,10 +310,10 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">
-                          {(parseFloat(project.funded) / Math.pow(10, 18)).toFixed(3)} ETH
+                          {(parseFloat(project.funded || '0') / Math.pow(10, 18)).toFixed(3)} ETH
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          of {(parseFloat(project.goal) / Math.pow(10, 18)).toFixed(3)} ETH
+                          of {(parseFloat(project.goal || '0') / Math.pow(10, 18)).toFixed(3)} ETH
                         </p>
                       </div>
                     </div>
@@ -315,7 +335,7 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground mb-4">
                     You haven't created any projects yet.
                   </p>
-                  <Button onClick={() => router.push('/create-project')}>
+                  <Button onClick={() => router.push('/publish')}>
                     Create Your First Project
                   </Button>
                 </div>
@@ -332,7 +352,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push('/create-project')}
+                  onClick={() => router.push('/publish')}
                   className="h-12"
                 >
                   <FolderOpen className="h-4 w-4 mr-2" />

@@ -77,22 +77,44 @@ export function useGetUserProjects() {
   const [projects, setProjects] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!address) return;
+    if (!address) {
+      console.log('useGetUserProjects: No address found');
+      setProjects([]);
+      return;
+    }
 
     const fetchData = async () => {
+      console.log('useGetUserProjects: Fetching projects for address:', address);
       setIsLoading(true);
       setError(null);
+      
       try {
-        const res = await fetch(`/api/users/${address}/projects`, {
+        const apiUrl = `/api/users/${address}/projects`;
+        console.log('useGetUserProjects: API URL:', apiUrl);
+        
+        const res = await fetch(apiUrl, {
           cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
+        
+        console.log('useGetUserProjects: Response status:', res.status);
+        
         const json = await res.json();
+        console.log('useGetUserProjects: Response data:', json);
+        
         if (!res.ok || !json.ok) {
-          throw new Error(json.error || 'Failed to load projects');
+          throw new Error(json.error || `HTTP ${res.status}: Failed to load projects`);
         }
-        setProjects(json.data);
+        
+        setProjects(json.data || []);
+        console.log('useGetUserProjects: Successfully set projects:', json.data?.length || 0);
+        
       } catch (e: any) {
+        console.error('useGetUserProjects: Error:', e);
         setError(e.message || 'Failed to load projects');
+        setProjects([]);
       } finally {
         setIsLoading(false);
       }

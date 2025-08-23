@@ -3,7 +3,7 @@ import { User, Project } from '@/types/global';
 
 // Hardcoded user
 const hardcodedUser: User = {
-  wallet: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+  wallet: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
   name: "Kartik Turak",
   country: "India",
   role: "Developer",

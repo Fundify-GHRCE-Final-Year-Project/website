@@ -53,8 +53,26 @@ export function ProjectCard({ project, viewMode = 'grid' }: ProjectCardProps) {
   }
 
   const handleViewProject = () => {
-    console.log('View project:', project)
-  }
+    console.log('View project:', project);
+// createdAt: "2025-08-22T09:18:41.153Z"
+// description: "Project by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+// funded: 8
+// fundedETH: 8e-18
+// fundingPercentage: 80
+// goal: 10
+// goalETH: 1e-17
+// id: "68a835f144bc54bb0c512817"
+// index: 0
+// isFullyFunded: false
+// milestones: 2
+// owner: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+// released: 0
+// releasedETH: 0
+// remainingToGoal: 2e-18
+// timestamp: 1755843183
+// title: "Project 0"
+// updatedAt: "2025-08-22T09:18:43.625Z"
+}
 
   // Safe number formatting with fallbacks
   const safeToFixed = (num: number | undefined, decimals: number = 2): string => {

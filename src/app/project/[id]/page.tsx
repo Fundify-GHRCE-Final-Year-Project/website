@@ -1,5 +1,7 @@
 'use client'
 
+// app/project/[id]/page.tsx]
+
 import { useParams } from 'next/navigation'
 import { useGetSelectedProject } from '@/lib/hooks'
 import { Button } from '@/components/ui/button'
