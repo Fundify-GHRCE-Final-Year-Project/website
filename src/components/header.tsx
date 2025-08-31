@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { setWalletToCache, clearWalletCache, clearUserCache, setUserToCache } from '@/lib/browserCache'
+import { injected, useAccount, useConnect, useDisconnect } from 'wagmi';
+
 
 export function Header() {
   const [isConnected, setIsConnected] = useAtom(isUserConnectedAtom)
@@ -29,10 +31,14 @@ export function Header() {
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
   const [hasProjects] = useAtom(hasProjectsAtom)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { address: walletAddress, isConnected: isWalletConnected } = useAccount();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
 
   const connectWallet = async () => {
     try {
       // Simulate wallet connection
+      connect({ connector: injected() })
       const mockWallet = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
       setWallet(mockWallet)
       setIsConnected(true)
@@ -70,6 +76,7 @@ export function Header() {
   }
 
   const disconnectWallet = () => {
+    disconnect()
     setWallet(null)
     setIsConnected(false)
     setCurrentUser(null)
@@ -132,11 +139,11 @@ export function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {isConnected && wallet  ? (
+            {isWalletConnected && walletAddress  ? (
               <div className="flex items-center space-x-4">
                 <Badge variant="outline" className="flex items-center space-x-1">
                   <Wallet className="h-3 w-3" />
-                  <span>{formatWalletAddress(wallet!)}</span>
+                  <span>{formatWalletAddress(walletAddress!)}</span>
                 </Badge>
                 
                 <Link href="/profile">
@@ -229,11 +236,11 @@ export function Header() {
                 </div>
               </Link>
 
-              {isConnected && wallet ?(
+              {isWalletConnected && walletAddress ?(
                 <div className="flex flex-col space-y-2 pt-4 border-t">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Wallet className="h-4 w-4" />
-                    <span>{formatWalletAddress(wallet!)}</span>
+                    <span>{formatWalletAddress(walletAddress!)}</span>
                   </div>
                   
                   <Link href="/profile">
