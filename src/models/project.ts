@@ -1,5 +1,5 @@
 // models/project.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IProject extends Document {
   owner: string;
@@ -9,8 +9,9 @@ export interface IProject extends Document {
   funded: number;
   released: number;
   timestamp: number;
-  title?: string;
-  description?: string;
+  title: string;
+  description: string;
+  members: string[];
 }
 
 export interface IInvestment extends Document {
@@ -31,12 +32,13 @@ const ProjectSchema = new Schema<IProject>(
     funded: { type: Number, required: true },
     released: { type: Number, required: true },
     timestamp: { type: Number, required: true },
-    title: { type: String },
-    description: { type: String },
+    title: { type: String, required: false, default: "" },
+    description: { type: String, required: false, default: "" },
+    members: { type: [String], required: false, default: [] },
   },
   {
     timestamps: true,
-    collection: 'projects',
+    collection: "projects",
   }
 );
 
@@ -51,7 +53,7 @@ const InvestmentSchema = new Schema<IInvestment>(
   },
   {
     timestamps: true,
-    collection: 'investments',
+    collection: "investments",
   }
 );
 
@@ -64,7 +66,8 @@ delete mongoose.models.Project;
 delete mongoose.models.Investment;
 
 export const ProjectModel =
-  mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema);
+  mongoose.models.Project || mongoose.model<IProject>("Project", ProjectSchema);
 
 export const InvestmentModel =
-  mongoose.models.Investment || mongoose.model<IInvestment>('Investment', InvestmentSchema);
+  mongoose.models.Investment ||
+  mongoose.model<IInvestment>("Investment", InvestmentSchema);

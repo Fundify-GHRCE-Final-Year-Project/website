@@ -6,6 +6,6 @@ export const wagmiConfig = createConfig({
   chains: [mainnet],
   connectors: [injected(), metaMask()],
   transports: {
-    [mainnet.id]: http(process.env.NEXT_PUBLIC_ALCHEMY_ETH_API_KEY),
+    [mainnet.id]: http("http://127.0.0.1:8545"),
   },
 });

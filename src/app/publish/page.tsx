@@ -30,6 +30,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ProjectSchema } from "@/types/global";
+import { useWriteContract } from "wagmi";
+import abi from "@/lib/abi.json";
+import { useDialog } from "@/components/ui/TransactionDialog";
+import { toast } from "sonner";
+import { contract } from "@/lib/contract";
+import { etherUnits, parseEther } from "viem";
+import { simulateContract } from "@wagmi/core";
+import { wagmiConfig } from "@/lib/wagmiConfig";
 
 export default function PublishProjectPage() {
   const router = useRouter();
@@ -37,6 +45,8 @@ export default function PublishProjectPage() {
   const [, setSuccessMessage] = useAtom(successMessageAtom);
   const [, setErrorMessage] = useAtom(errorMessageAtom);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showLoadingDialog, hideLoadingDialog } = useDialog();
+  const { writeContract, writeContractAsync } = useWriteContract();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -92,9 +102,9 @@ export default function PublishProjectPage() {
     if (
       !formData.milestones ||
       parseInt(formData.milestones) < 1 ||
-      parseInt(formData.milestones) > 20
+      parseInt(formData.milestones) > 5
     ) {
-      newErrors.milestones = "Milestones must be between 1 and 20";
+      newErrors.milestones = "Milestones must be between 1 and 5";
     }
 
     // Validate member addresses
@@ -108,48 +118,48 @@ export default function PublishProjectPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleContractCall = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!currentUser) {
-      setErrorMessage("Please connect your wallet first");
+      toast.error("No Wallet Found", {
+        description: "Please install a wallet extension to use Fundify",
+      });
       return;
     }
 
     if (!validateForm()) {
+      toast.error("Invalid Form Inputs", {
+        description: "Enter valid inputs in the form",
+      });
       return;
     }
 
-    setIsSubmitting(true);
-
+    showLoadingDialog({
+      isOpen: true,
+      title: "Processing your request",
+      description: "Calling Fundify on Ethereum",
+    });
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Create project data
-      const projectData = {
-        owner: String(currentUser.wallet || "").trim(),
-        members: formData.members.filter((m) => m.trim()).map((m) => m.trim()),
-        index: Math.floor(Math.random() * 10000) + 1,
-        goal: parseFloat(formData.goal),
-        milestones: parseInt(formData.milestones),
-        funded: 0,
-        released: 0,
-        ended: false,
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-      };
-
-      // Validate with Zod schema
-      ProjectSchema.parse(projectData);
-
-      setSuccessMessage("Project published successfully!");
-      router.push("/my-projects");
+      const sig = await writeContractAsync({
+        address: contract.address, // deployed contract address
+        abi: abi.abi,
+        functionName: "createProject",
+        args: [parseEther(formData.goal), parseInt(formData.milestones)],
+        gas: BigInt(300000),
+      });
+      toast.success("Project Created", {
+        description: `${sig}`,
+      });
     } catch (error) {
-      console.error("Error publishing project:", error);
-      setErrorMessage("Failed to publish project. Please try again.");
+      console.log(error);
+      toast.error("Authentication Error", {
+        description: `${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      });
     } finally {
-      setIsSubmitting(false);
+      hideLoadingDialog();
     }
   };
 
@@ -191,7 +201,7 @@ export default function PublishProjectPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleContractCall} className="space-y-8">
             {/* Basic Information */}
             <Card>
               <CardHeader>
