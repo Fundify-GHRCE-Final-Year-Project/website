@@ -1,21 +1,27 @@
 // src/app/profile/page.tsx
-'use client'
+"use client";
 
-import { useAtom } from 'jotai'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { currentUserAtom, isUserConnectedAtom } from '@/store/global'
-import { useGetUserProjects } from '@/lib/hooks'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  User, 
-  Wallet, 
-  MapPin, 
-  Briefcase, 
-  Github, 
-  Linkedin, 
+import { useAtom } from "jotai";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
+import { useGetUserProjects } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  User,
+  Wallet,
+  MapPin,
+  Briefcase,
+  Github,
+  Linkedin,
   Twitter,
   Mail,
   Calendar,
@@ -25,8 +31,8 @@ import {
   Edit,
   ExternalLink,
   Loader2,
-  AlertCircle
-} from 'lucide-react'
+  AlertCircle,
+} from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -36,24 +42,24 @@ export default function ProfilePage() {
 
   // Debug logging
   useEffect(() => {
-    console.log('Profile Debug:', {
+    console.log("Profile Debug:", {
       isConnected,
       currentUser,
       userWallet: currentUser?.wallet,
       projects,
       isLoading,
-      error
+      error,
     });
   }, [isConnected, currentUser, projects, isLoading, error]);
 
   useEffect(() => {
     if (!isConnected || !currentUser) {
-      router.push('/');
+      router.push("/");
     }
   }, [isConnected, currentUser, router]);
 
   const formatAddress = (address: string) => {
-    if (!address) return '';
+    if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -63,13 +69,13 @@ export default function ProfilePage() {
         totalProjects: 0,
         totalFunded: 0,
         totalGoal: 0,
-        fundingPercentage: 0
+        fundingPercentage: 0,
       };
     }
 
     const totalFunded = projects.reduce((sum, project) => {
       try {
-        return sum + (parseFloat(project.funded) / Math.pow(10, 18));
+        return sum + parseFloat(project.funded) / Math.pow(10, 18);
       } catch {
         return sum;
       }
@@ -77,7 +83,7 @@ export default function ProfilePage() {
 
     const totalGoal = projects.reduce((sum, project) => {
       try {
-        return sum + (parseFloat(project.goal) / Math.pow(10, 18));
+        return sum + parseFloat(project.goal) / Math.pow(10, 18);
       } catch {
         return sum;
       }
@@ -87,7 +93,7 @@ export default function ProfilePage() {
       totalProjects: projects.length,
       totalFunded,
       totalGoal,
-      fundingPercentage: totalGoal > 0 ? (totalFunded / totalGoal) * 100 : 0
+      fundingPercentage: totalGoal > 0 ? (totalFunded / totalGoal) * 100 : 0,
     };
   };
 
@@ -100,7 +106,9 @@ export default function ProfilePage() {
           <div className="text-center">
             <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">No User Data</h2>
-            <p className="text-muted-foreground">Please connect your wallet to view profile.</p>
+            <p className="text-muted-foreground">
+              Please connect your wallet to view profile.
+            </p>
           </div>
         </div>
       </div>
@@ -117,7 +125,7 @@ export default function ProfilePage() {
             Manage your account and view your activity on Fundiy.
           </p>
         </div>
-        <Button onClick={() => router.push('/profile/edit')}>
+        <Button onClick={() => router.push("/profile/edit")}>
           <Edit className="h-4 w-4 mr-2" />
           Edit Profile
         </Button>
@@ -132,13 +140,13 @@ export default function ProfilePage() {
                 <User className="h-12 w-12 text-primary" />
               </div>
               <CardTitle className="text-xl">
-                {currentUser.name || 'Anonymous User'}
+                {currentUser.name || "Anonymous User"}
               </CardTitle>
               <CardDescription>
                 {formatAddress(currentUser.wallet)}
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {currentUser.country && (
                 <div className="flex items-center space-x-3">
@@ -146,7 +154,7 @@ export default function ProfilePage() {
                   <span className="text-sm">{currentUser.country}</span>
                 </div>
               )}
-              
+
               {currentUser.role && (
                 <div className="flex items-center space-x-3">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -171,9 +179,9 @@ export default function ProfilePage() {
               {/* Social Links */}
               <div className="space-y-2">
                 {currentUser.github && (
-                  <a 
-                    href={currentUser.github} 
-                    target="_blank" 
+                  <a
+                    href={currentUser.github}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
                   >
@@ -182,11 +190,11 @@ export default function ProfilePage() {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                
+
                 {currentUser.linkedin && (
-                  <a 
-                    href={currentUser.linkedin} 
-                    target="_blank" 
+                  <a
+                    href={currentUser.linkedin}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
                   >
@@ -195,11 +203,11 @@ export default function ProfilePage() {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                
+
                 {currentUser.x && (
-                  <a 
-                    href={currentUser.x} 
-                    target="_blank" 
+                  <a
+                    href={currentUser.x}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
                   >
@@ -233,7 +241,9 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Projects
+                </CardTitle>
                 <FolderOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -246,11 +256,15 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Funds Raised</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Funds Raised
+                </CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalFunded.toFixed(3)} ETH</div>
+                <div className="text-2xl font-bold">
+                  {stats.totalFunded.toFixed(3)} ETH
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Total funding received
                 </p>
@@ -259,11 +273,15 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Success Rate
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.fundingPercentage.toFixed(1)}%</div>
+                <div className="text-2xl font-bold">
+                  {stats.fundingPercentage.toFixed(1)}%
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Average funding progress
                 </p>
@@ -275,9 +293,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Projects</CardTitle>
-              <CardDescription>
-                Your latest project activities
-              </CardDescription>
+              <CardDescription>Your latest project activities</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -293,7 +309,7 @@ export default function ProfilePage() {
               ) : projects && projects.length > 0 ? (
                 <div className="space-y-4">
                   {projects.slice(0, 3).map((project) => (
-                    <div 
+                    <div
                       key={`${project.owner}-${project.index}`}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
@@ -302,28 +318,34 @@ export default function ProfilePage() {
                           {project.title || `Project #${project.index}`}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          {project.description ? 
-                            project.description.slice(0, 60) + '...' : 
-                            'No description available'
-                          }
+                          {project.description
+                            ? project.description.slice(0, 60) + "..."
+                            : "No description available"}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">
-                          {(parseFloat(project.funded || '0') / Math.pow(10, 18)).toFixed(3)} ETH
+                          {(
+                            parseFloat(project.funded || "0") / Math.pow(10, 18)
+                          ).toFixed(3)}{" "}
+                          ETH
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          of {(parseFloat(project.goal || '0') / Math.pow(10, 18)).toFixed(3)} ETH
+                          of{" "}
+                          {(
+                            parseFloat(project.goal || "0") / Math.pow(10, 18)
+                          ).toFixed(3)}{" "}
+                          ETH
                         </p>
                       </div>
                     </div>
                   ))}
-                  
+
                   {projects.length > 3 && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full mt-4"
-                      onClick={() => router.push('/my-projects')}
+                      onClick={() => router.push("/my-projects")}
                     >
                       View All Projects ({projects.length})
                     </Button>
@@ -335,7 +357,7 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground mb-4">
                     You haven't created any projects yet.
                   </p>
-                  <Button onClick={() => router.push('/publish')}>
+                  <Button onClick={() => router.push("/publish")}>
                     Create Your First Project
                   </Button>
                 </div>
@@ -350,36 +372,36 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push('/publish')}
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/publish")}
                   className="h-12"
                 >
                   <FolderOpen className="h-4 w-4 mr-2" />
                   Create New Project
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push('/my-projects')}
+
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/my-projects")}
                   className="h-12"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View My Projects
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push('/invested-projects')}
+
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/invested-projects")}
                   className="h-12"
                 >
                   <Wallet className="h-4 w-4 mr-2" />
                   My Investments
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push('/projects')}
+
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/projects")}
                   className="h-12"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
