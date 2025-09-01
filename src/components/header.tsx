@@ -28,6 +28,7 @@ import {
   setUserToCache,
 } from "@/lib/browserCache";
 import { injected, useAccount, useConnect, useDisconnect } from "wagmi";
+import { useDialog } from "./ui/TransactionDialog";
 
 export function Header() {
   const [isConnected, setIsConnected] = useAtom(isUserConnectedAtom);
@@ -39,6 +40,16 @@ export function Header() {
     useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
+  const { showCustomAlertDialog } = useDialog();
+
+  const handleNoWalletConnectAttempt = () => {
+    showCustomAlertDialog({
+      title: "No Ethereum Wallet Found",
+      description: "Please install a wallet extension to connect.",
+      onConfirm: () => {},
+      onCancel: () => {},
+    });
+  };
 
   const connectWallet = async () => {
     try {
@@ -177,7 +188,13 @@ export function Header() {
               </div>
             ) : (
               <Button
-                onClick={connectWallet}
+                onClick={() => {
+                  if (window != undefined && window.ethereum == undefined) {
+                    handleNoWalletConnectAttempt();
+                  } else {
+                    connectWallet();
+                  }
+                }}
                 className="flex items-center space-x-2"
               >
                 <Wallet className="h-4 w-4" />
