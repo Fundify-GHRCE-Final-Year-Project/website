@@ -21,6 +21,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   setWalletToCache,
   clearWalletCache,
@@ -31,6 +32,7 @@ import { injected, useAccount, useConnect, useDisconnect } from "wagmi";
 import { useDialog } from "./ui/TransactionDialog";
 
 export function Header() {
+  const router = useRouter();
   const [isConnected, setIsConnected] = useAtom(isUserConnectedAtom);
   const [wallet, setWallet] = useAtom(userWalletAtom);
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
@@ -58,26 +60,31 @@ export function Header() {
       setWalletToCache(walletAddress as string);
 
       (async () => {
-      try {
-        // Upsert minimal record on server - creates if not exists and returns user doc
-        const res = await fetch("/api/user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet: walletAddress }),
-        });
+        try {
+          // Upsert minimal record on server - creates if not exists and returns user doc
+          const res = await fetch("/api/user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ wallet: walletAddress }),
+          });
 
-        if (res.ok) {
-          const user = await res.json();
-          setCurrentUser(user);
-          setUserToCache(user);
-        } else {
-          console.error("Upsert user failed", await res.text());
+          if (res.ok) {
+            const user = await res.json();
+            setCurrentUser(user);
+            setUserToCache(user);
+
+            if (!user.name || user.name.trim() === "") {
+              router.push("/editProfile");
+            }
+          } else {
+            console.error("Upsert user failed", await res.text());
+          }
+        } catch (err) {
+          console.error("Error upserting user:", err);
         }
-      } catch (err) {
-        console.error("Error upserting user:", err);
-      }
-    })();
-  }
+      })();
+    }
+  }, [walletAddress, isWalletConnected]);
 
     // Generate and set user data for the connected wallet
     //   const mockUser = {
@@ -95,7 +102,6 @@ export function Header() {
     //   setCurrentUser(mockUser);
     //   setUserToCache(mockUser);
     // }
-  }, [walletAddress, isWalletConnected]);
 
   const disconnectWallet = () => {
     disconnect();
