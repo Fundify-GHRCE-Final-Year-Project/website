@@ -30,14 +30,15 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ProjectSchema } from "@/types/global";
-import { useWriteContract } from "wagmi";
+import { useReadContract, useWriteContract } from "wagmi";
 import abi from "@/lib/abi.json";
 import { useDialog } from "@/components/ui/TransactionDialog";
 import { toast } from "sonner";
-import { contract } from "@/lib/contract";
+import { contract, wagmiContractConfig } from "@/lib/contract";
 import { etherUnits, parseEther } from "viem";
-import { simulateContract } from "@wagmi/core";
+import { readContract, simulateContract } from "@wagmi/core";
 import { wagmiConfig } from "@/lib/wagmiConfig";
+import { read } from "fs";
 
 export default function PublishProjectPage() {
   const router = useRouter();
@@ -47,6 +48,12 @@ export default function PublishProjectPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showLoadingDialog, hideLoadingDialog } = useDialog();
   const { writeContract, writeContractAsync } = useWriteContract();
+  const { data: index } = useReadContract({
+    abi: abi.abi,
+    address: contract.address,
+    functionName: "projectCount",
+    args: [currentUser?.wallet],
+  });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -147,6 +154,16 @@ export default function PublishProjectPage() {
         functionName: "createProject",
         args: [parseEther(formData.goal), parseInt(formData.milestones)],
         gas: BigInt(300000),
+      });
+      const res = await fetch(`/api/projects/publish/${currentUser.wallet}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          members: formData.members,
+        }),
       });
       toast.success("Project Created", {
         description: `${sig}`,

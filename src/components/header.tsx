@@ -60,22 +60,11 @@ export function Header() {
       // Generate and set user data for the connected wallet
       const mockUser = {
         wallet: walletAddress as string,
-        name: "John Doe",
-        country: "United States",
-        role: "Software Developer",
+        name: "Arav Bhivgade",
+        country: "India",
+        role: "Software Engineer",
         skills: ["JavaScript", "React", "TypeScript", "Node.js", "Blockchain"],
-        experiences: [
-          {
-            role: "Senior Developer",
-            company: "Tech Corp",
-            duration: "2020-2023",
-          },
-          {
-            role: "Full Stack Developer",
-            company: "Startup Inc",
-            duration: "2018-2020",
-          },
-        ],
+        experiences: [],
         linkedin: "https://linkedin.com/in/johndoe",
         x: "https://x.com/johndoe",
         github: "https://github.com/johndoe",

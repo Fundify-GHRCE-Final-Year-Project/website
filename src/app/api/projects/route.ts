@@ -9,9 +9,9 @@ function transformProject(project: any) {
   const projectData = project.toObject ? project.toObject() : project;
 
   // Parse BigInt strings to numbers and convert to ETH
-  const funded = parseFloat(projectData.funded || "0") / Math.pow(10, 18);
-  const goal = parseFloat(projectData.goal || "0") / Math.pow(10, 18);
-  const released = parseFloat(projectData.released || "0") / Math.pow(10, 18);
+  const funded = parseFloat(projectData.funded || "0");
+  const goal = parseFloat(projectData.goal || "0");
+  const released = parseFloat(projectData.released || "0");
 
   return {
     id: projectData._id?.toString() || projectData.id,

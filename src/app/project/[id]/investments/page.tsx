@@ -1,11 +1,17 @@
 // pages/project/[index]/investments.tsx or app/project/[index]/investments/page.tsx
-'use client'
+"use client";
 
-import { useGetProjectInvestments } from '@/lib/hooks'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
+import { useGetProjectInvestments } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Loader2,
   AlertCircle,
   TrendingUp,
@@ -13,11 +19,11 @@ import {
   DollarSign,
   ArrowLeft,
   Calendar,
-  Wallet
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useAtom } from 'jotai'
-import { currentUserAtom } from '@/store/global'
+  Wallet,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { currentUserAtom } from "@/store/global";
 
 interface ProjectInvestmentsPageProps {
   params: {
@@ -25,9 +31,18 @@ interface ProjectInvestmentsPageProps {
   };
 }
 
-export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPageProps) {
+export default function ProjectInvestmentsPage({
+  params,
+}: ProjectInvestmentsPageProps) {
   const projectIndex = parseInt(params.index);
-  const { project, investments, totalInvestments, totalAmount, isLoading, error } = useGetProjectInvestments(projectIndex);
+  const {
+    project,
+    investments,
+    totalInvestments,
+    totalAmount,
+    isLoading,
+    error,
+  } = useGetProjectInvestments(projectIndex);
   const [currentUser] = useAtom(currentUserAtom);
   const router = useRouter();
 
@@ -41,10 +56,10 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
 
   const formatEth = (amount: string) => {
     try {
-      const eth = parseFloat(amount) / Math.pow(10, 18);
+      const eth = parseFloat(amount);
       return eth.toFixed(4);
     } catch {
-      return '0.0000';
+      return "0.0000";
     }
   };
 
@@ -53,13 +68,11 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <AlertCircle className="h-12 w-12 text-red-500" />
-          <h2 className="text-2xl font-semibold">Error Loading Project Investments</h2>
-          <p className="text-muted-foreground text-center max-w-md">
-            {error}
-          </p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <h2 className="text-2xl font-semibold">
+            Error Loading Project Investments
+          </h2>
+          <p className="text-muted-foreground text-center max-w-md">{error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     );
@@ -82,15 +95,11 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="mb-4"
-        >
+        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        
+
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Project Investments</h1>
           {project && (
@@ -111,20 +120,26 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Raised</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Raised
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatEth(totalAmount)} ETH</div>
+              <div className="text-2xl font-bold">
+                {formatEth(totalAmount)} ETH
+              </div>
               <p className="text-xs text-muted-foreground">
-                Goal: {project ? formatEth(project.goal) : '0'} ETH
+                Goal: {project ? formatEth(project.goal) : "0"} ETH
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Investors</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Investors
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -134,7 +149,7 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Progress</CardTitle>
@@ -142,11 +157,14 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {project ? Math.round((parseFloat(totalAmount) / parseFloat(project.goal)) * 100) : 0}%
+                {project
+                  ? Math.round(
+                      (parseFloat(totalAmount) / parseFloat(project.goal)) * 100
+                    )
+                  : 0}
+                %
               </div>
-              <p className="text-xs text-muted-foreground">
-                Of funding goal
-              </p>
+              <p className="text-xs text-muted-foreground">Of funding goal</p>
             </CardContent>
           </Card>
         </div>
@@ -155,7 +173,7 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
       {/* Investments List */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Investment History</h3>
-        
+
         {investments.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -188,7 +206,7 @@ export default function ProjectInvestmentsPage({ params }: ProjectInvestmentsPag
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
                     <p className="text-lg font-semibold">
                       {formatEth(investment.amount)} ETH

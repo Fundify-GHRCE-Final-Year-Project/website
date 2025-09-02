@@ -54,7 +54,7 @@ export default function InvestedProjectsPage() {
     const total = investments.reduce((sum, inv) => {
       try {
         // Convert BigInt string to ETH
-        const ethAmount = parseFloat(inv.amount) / Math.pow(10, 18);
+        const ethAmount = parseFloat(inv.amount) 
         return sum + ethAmount;
       } catch {
         return sum;
@@ -227,7 +227,7 @@ export default function InvestedProjectsPage() {
             
             const totalUserInvestment = userInvestments.reduce((sum, inv) => {
               try {
-                const ethAmount = parseFloat(inv.amount) / Math.pow(10, 18);
+                const ethAmount = parseFloat(inv.amount) 
                 return sum + ethAmount;
               } catch {
                 return sum;
@@ -281,7 +281,7 @@ export default function InvestedProjectsPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">
-                        {(parseFloat(investment.amount) / Math.pow(10, 18)).toFixed(4)} ETH
+                        {(parseFloat(investment.amount) / ).toFixed(4)} ETH
                       </p>
                       <Badge variant="outline" className="text-xs">
                         Investment #{investment.investmentIndex}

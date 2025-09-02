@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
     const totalFunded = projects.reduce((sum, project) => {
       try {
-        return sum + parseFloat(project.funded) / Math.pow(10, 18);
+        return sum + parseFloat(project.funded);
       } catch {
         return sum;
       }
@@ -83,7 +83,7 @@ export default function ProfilePage() {
 
     const totalGoal = projects.reduce((sum, project) => {
       try {
-        return sum + parseFloat(project.goal) / Math.pow(10, 18);
+        return sum + parseFloat(project.goal);
       } catch {
         return sum;
       }
@@ -325,17 +325,10 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">
-                          {(
-                            parseFloat(project.funded || "0") / Math.pow(10, 18)
-                          ).toFixed(3)}{" "}
-                          ETH
+                          {parseFloat(project.funded || "0").toFixed(3)} ETH
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          of{" "}
-                          {(
-                            parseFloat(project.goal || "0") / Math.pow(10, 18)
-                          ).toFixed(3)}{" "}
-                          ETH
+                          of {parseFloat(project.goal || "0").toFixed(3)} ETH
                         </p>
                       </div>
                     </div>

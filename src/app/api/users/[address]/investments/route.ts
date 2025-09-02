@@ -65,7 +65,7 @@ export async function GET(
         projectIndex: invData.projectIndex,
         amount: invData.amount,
         timestamp: invData.timestamp,
-        amountETH: parseFloat(invData.amount || "0") / Math.pow(10, 18),
+        amountETH: parseFloat(invData.amount || "0") / ,
         project: project
           ? {
               id: project._id?.toString(),
@@ -74,9 +74,9 @@ export async function GET(
               title: project.title || `Project ${project.index}`,
               description: project.description || `Project by ${project.owner}`,
               goal: project.goal,
-              goalETH: parseFloat(project.goal || "0") / Math.pow(10, 18),
+              goalETH: parseFloat(project.goal || "0") / ,
               funded: project.funded,
-              fundedETH: parseFloat(project.funded || "0") / Math.pow(10, 18),
+              fundedETH: parseFloat(project.funded || "0") / ,
               milestones: project.milestones,
               timestamp: project.timestamp,
             }

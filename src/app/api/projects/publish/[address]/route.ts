@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ProjectModel } from "@/models/project";
 import { title } from "process";
 
-export async function GET(
+export async function POST(
   request: Request,
   { params }: { params: Promise<{ address: string; index: string }> }
 ) {
@@ -10,11 +10,12 @@ export async function GET(
     // extract parmeters from request
     const { address, index } = await params;
     const body = await request.json();
+    console.log("update project title,description,members");
+    console.log(address, index);
 
-    const project = ProjectModel.findOneAndUpdate(
+    const project = await ProjectModel.findOneAndUpdate(
       {
         owner: address,
-        index: index,
       },
       {
         $set: {
@@ -23,7 +24,10 @@ export async function GET(
           members: body.members,
         },
       },
-      { new: true, runValidators: true }
+      {
+        sort: { score: -1 }, // sort option
+        new: true, // return the updated doc
+      }
     );
 
     return NextResponse.json(

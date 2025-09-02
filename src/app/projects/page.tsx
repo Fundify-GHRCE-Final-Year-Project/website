@@ -1,89 +1,102 @@
-'use client'
+"use client";
 
-import { useGetAllProjects } from '@/lib/hooks'
-import { ProjectCard } from '@/components/project-card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { 
-  Search, 
-  Filter, 
-  Grid3X3, 
+import { useGetAllProjects } from "@/lib/hooks";
+import { ProjectCard } from "@/components/project-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Search,
+  Filter,
+  Grid3X3,
   List,
   Loader2,
   AlertCircle,
   TrendingUp,
   Target,
   Clock,
-  CheckCircle
-} from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+  CheckCircle,
+} from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 
 export default function ProjectsPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'funded' | 'ended'>('all')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "funded" | "ended"
+  >("all");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Debounce search term to avoid too many API calls
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm)
-    }, 500)
+      setDebouncedSearch(searchTerm);
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const { projects, meta, isLoading, error } = useGetAllProjects({
     search: debouncedSearch,
     status: statusFilter,
     limit: 50,
-    offset: 0
-  })
+    offset: 0,
+  });
 
   // Client-side filtering as backup (in case API doesn't handle all filters)
   const filteredProjects = useMemo(() => {
-    if (!projects) return []
-    
-    return projects.filter(project => {
+    if (!projects) return [];
+
+    return projects.filter((project) => {
       // Search filter (backup - API should handle this)
-      const matchesSearch = !searchTerm || 
-        (project.title && project.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (project.owner && project.owner.toLowerCase().includes(searchTerm.toLowerCase()))
-      
+      const matchesSearch =
+        !searchTerm ||
+        (project.title &&
+          project.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (project.description &&
+          project.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (project.owner &&
+          project.owner.toLowerCase().includes(searchTerm.toLowerCase()));
+
       // Status filter (backup - API should handle this)
-      let matchesStatus = true
-      if (statusFilter === 'active') {
-        matchesStatus = !project.isFullyFunded && project.fundingPercentage < 100
-      } else if (statusFilter === 'funded') {
-        matchesStatus = project.isFullyFunded || project.fundingPercentage >= 100
-      } else if (statusFilter === 'ended') {
+      let matchesStatus = true;
+      if (statusFilter === "active") {
+        matchesStatus =
+          !project.isFullyFunded && project.fundingPercentage < 100;
+      } else if (statusFilter === "funded") {
+        matchesStatus =
+          project.isFullyFunded || project.fundingPercentage >= 100;
+      } else if (statusFilter === "ended") {
         // Consider a project ended if it's old or reached goal
-        const isOld = Date.now() / 1000 - project.timestamp > 90 * 24 * 60 * 60 // 90 days old
-        matchesStatus = isOld || project.isFullyFunded
+        const isOld = Date.now() / 1000 - project.timestamp > 90 * 24 * 60 * 60; // 90 days old
+        matchesStatus = isOld || project.isFullyFunded;
       }
-      
-      return matchesSearch && matchesStatus
-    })
-  }, [projects, searchTerm, statusFilter])
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [projects, searchTerm, statusFilter]);
 
   const projectStats = useMemo(() => {
-    if (!projects || projects.length === 0) return null
-    
-    const totalProjects = projects.length
-    const activeProjects = projects.filter(p => !p.isFullyFunded).length
-    const fundedProjects = projects.filter(p => p.isFullyFunded).length
-    const totalFunding = projects.reduce((sum, p) => sum + (p.fundedETH || 0), 0)
-    
+    if (!projects || projects.length === 0) return null;
+
+    const totalProjects = projects.length;
+    const activeProjects = projects.filter((p) => !p.isFullyFunded).length;
+    const fundedProjects = projects.filter((p) => p.isFullyFunded).length;
+    const totalFunding = projects.reduce(
+      (sum, p) => sum + (p.fundedETH || 0),
+      0
+    );
+
     return {
       total: totalProjects,
       active: activeProjects,
       funded: fundedProjects,
-      totalFunding
-    }
-  }, [projects])
+      totalFunding,
+    };
+  }, [projects]);
 
   if (error) {
     return (
@@ -91,15 +104,11 @@ export default function ProjectsPage() {
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <AlertCircle className="h-12 w-12 text-red-500" />
           <h2 className="text-2xl font-semibold">Error Loading Projects</h2>
-          <p className="text-muted-foreground text-center max-w-md">
-            {error}
-          </p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <p className="text-muted-foreground text-center max-w-md">{error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -108,7 +117,8 @@ export default function ProjectsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Discover Projects</h1>
         <p className="text-muted-foreground">
-          Explore innovative projects and support creators with cryptocurrency funding.
+          Explore innovative projects and support creators with cryptocurrency
+          funding.
         </p>
       </div>
 
@@ -122,37 +132,45 @@ export default function ProjectsPage() {
                   <TrendingUp className="h-4 w-4 text-blue-500" />
                   <span className="text-sm font-medium">Total Projects</span>
                 </div>
-                <div className="text-2xl font-bold mt-2">{projectStats.total}</div>
+                <div className="text-2xl font-bold mt-2">
+                  {projectStats.total}
+                </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-orange-500" />
                   <span className="text-sm font-medium">Active</span>
                 </div>
-                <div className="text-2xl font-bold mt-2">{projectStats.active}</div>
+                <div className="text-2xl font-bold mt-2">
+                  {projectStats.active}
+                </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span className="text-sm font-medium">Funded</span>
                 </div>
-                <div className="text-2xl font-bold mt-2">{projectStats.funded}</div>
+                <div className="text-2xl font-bold mt-2">
+                  {projectStats.funded}
+                </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Target className="h-4 w-4 text-purple-500" />
                   <span className="text-sm font-medium">Total Raised</span>
                 </div>
-                <div className="text-2xl font-bold mt-2">{projectStats.totalFunding.toFixed(2)} ETH</div>
+                <div className="text-2xl font-bold mt-2">
+                  {projectStats.totalFunding.toFixed(2)} ETH
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -171,19 +189,19 @@ export default function ProjectsPage() {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
+              variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
             >
               <List className="h-4 w-4" />
             </Button>
@@ -192,33 +210,45 @@ export default function ProjectsPage() {
 
         <div className="flex flex-wrap gap-2">
           <Button
-            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter('all')}
+            onClick={() => setStatusFilter("all")}
           >
             All Projects
-            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.total}</Badge>}
+            {projectStats && (
+              <Badge variant="secondary" className="ml-2">
+                {projectStats.total}
+              </Badge>
+            )}
           </Button>
           <Button
-            variant={statusFilter === 'active' ? 'default' : 'outline'}
+            variant={statusFilter === "active" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter('active')}
+            onClick={() => setStatusFilter("active")}
           >
             Active
-            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.active}</Badge>}
+            {projectStats && (
+              <Badge variant="secondary" className="ml-2">
+                {projectStats.active}
+              </Badge>
+            )}
           </Button>
           <Button
-            variant={statusFilter === 'funded' ? 'default' : 'outline'}
+            variant={statusFilter === "funded" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter('funded')}
+            onClick={() => setStatusFilter("funded")}
           >
             Funded
-            {projectStats && <Badge variant="secondary" className="ml-2">{projectStats.funded}</Badge>}
+            {projectStats && (
+              <Badge variant="secondary" className="ml-2">
+                {projectStats.funded}
+              </Badge>
+            )}
           </Button>
           <Button
-            variant={statusFilter === 'ended' ? 'default' : 'outline'}
+            variant={statusFilter === "ended" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter('ended')}
+            onClick={() => setStatusFilter("ended")}
           >
             Ended
           </Button>
@@ -234,7 +264,9 @@ export default function ProjectsPage() {
               Loading projects...
             </span>
           ) : (
-            `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''} found`
+            `${filteredProjects.length} project${
+              filteredProjects.length !== 1 ? "s" : ""
+            } found`
           )}
           {meta && meta.total && (
             <span className="ml-2">• Total: {meta.total} projects</span>
@@ -254,13 +286,15 @@ export default function ProjectsPage() {
 
       {/* Projects Grid/List */}
       {!isLoading && filteredProjects.length > 0 && (
-        <div className={
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'space-y-4'
-        }>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
+          }
+        >
           {filteredProjects.map((project) => (
-            <ProjectCard 
+            <ProjectCard
               key={`${project.owner}-${project.index}`}
               project={project}
               viewMode={viewMode}
@@ -272,9 +306,7 @@ export default function ProjectsPage() {
       {/* Load More Button */}
       {!isLoading && meta?.hasMore && (
         <div className="flex justify-center mt-8">
-          <Button variant="outline">
-            Load More Projects
-          </Button>
+          <Button variant="outline">Load More Projects</Button>
         </div>
       )}
 
@@ -286,17 +318,16 @@ export default function ProjectsPage() {
           </div>
           <h3 className="text-xl font-semibold">No projects found</h3>
           <p className="text-muted-foreground text-center max-w-md">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'Try adjusting your search or filters to find more projects.'
-              : 'There are no projects available at the moment. Check back later!'
-            }
+            {searchTerm || statusFilter !== "all"
+              ? "Try adjusting your search or filters to find more projects."
+              : "There are no projects available at the moment. Check back later!"}
           </p>
-          {(searchTerm || statusFilter !== 'all') && (
-            <Button 
-              variant="outline" 
+          {(searchTerm || statusFilter !== "all") && (
+            <Button
+              variant="outline"
               onClick={() => {
-                setSearchTerm('')
-                setStatusFilter('all')
+                setSearchTerm("");
+                setStatusFilter("all");
               }}
             >
               Clear Filters
@@ -305,5 +336,5 @@ export default function ProjectsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
