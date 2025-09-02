@@ -3,9 +3,9 @@
 
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { currentUserAtom, isUserConnectedAtom } from "@/store/global";
-import { useGetUserProjects } from "@/lib/hooks";
+import { fetchUserByWallet, useGetUserProjects } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,30 +33,84 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import { useAccount } from "wagmi";
+
+interface UserData {
+  _id: string;
+  wallet: string;
+  name: string;
+  phone: string;
+  address: string;
+  country: string;
+  role: string;
+  skills: string[];
+  github: string;
+  linkedin: string;
+  x: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isConnected] = useAtom(isUserConnectedAtom);
   const [currentUser] = useAtom(currentUserAtom);
   const { projects, isLoading, error } = useGetUserProjects();
+  
+  // State for dynamically fetched user data
+  const [fetchedUser, setFetchedUser] = useState<UserData | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
+
+  const { address: walletAddress } = useAccount();
+
+  // Fetch user data dynamically
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!walletAddress) return;
+      
+      setIsUserLoading(true);
+      setUserError(null);
+      
+      try {
+        const userData = await fetchUserByWallet(walletAddress);
+        console.log("Fetched user data:", userData);
+        setFetchedUser(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUserError("Failed to fetch user data");
+      } finally {
+        setIsUserLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [walletAddress]);
+
+  // Use fetched user data, fallback to currentUser from atom
+  const displayUser = fetchedUser || currentUser;
 
   // Debug logging
   useEffect(() => {
     console.log("Profile Debug:", {
       isConnected,
       currentUser,
-      userWallet: currentUser?.wallet,
+      fetchedUser,
+      displayUser,
+      userWallet: displayUser?.wallet,
+      walletAddress,
       projects,
       isLoading,
       error,
     });
-  }, [isConnected, currentUser, projects, isLoading, error]);
+  }, [isConnected, currentUser, fetchedUser, displayUser, walletAddress, projects, isLoading, error]);
 
   useEffect(() => {
-    if (!isConnected || !currentUser) {
+    if (!isConnected) {
       router.push("/");
     }
-  }, [isConnected, currentUser, router]);
+  }, [isConnected, router]);
 
   const formatAddress = (address: string) => {
     if (!address) return "";
@@ -99,7 +153,43 @@ export default function ProfilePage() {
 
   const stats = calculateProjectStats();
 
-  if (!currentUser) {
+  // Show loading state while fetching user data
+  if (isUserLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
+            <h2 className="text-xl font-semibold mb-2">Loading Profile</h2>
+            <p className="text-muted-foreground">
+              Fetching your profile information...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if user fetch failed
+  if (userError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+            <h2 className="text-xl font-semibold mb-2">Error Loading Profile</h2>
+            <p className="text-muted-foreground mb-4">{userError}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no user state if no user data available
+  if (!displayUser) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -125,7 +215,7 @@ export default function ProfilePage() {
             Manage your account and view your activity on Fundiy.
           </p>
         </div>
-        <Button onClick={() => router.push("/profile/edit")}>
+        <Button onClick={() => router.push("/profile/editProfile")}>
           <Edit className="h-4 w-4 mr-2" />
           Edit Profile
         </Button>
@@ -140,34 +230,48 @@ export default function ProfilePage() {
                 <User className="h-12 w-12 text-primary" />
               </div>
               <CardTitle className="text-xl">
-                {currentUser.name || "Anonymous User"}
+                {displayUser.name || "Anonymous User"}
               </CardTitle>
               <CardDescription>
-                {formatAddress(currentUser.wallet)}
+                {formatAddress(displayUser.wallet)}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {currentUser.country && (
+              {/* {displayUser.address && (
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{currentUser.country}</span>
+                  <span className="text-sm">{displayUser.address}</span>
+                </div>
+              )} */}
+
+              {displayUser.country && (
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{displayUser.country}</span>
                 </div>
               )}
 
-              {currentUser.role && (
+              {displayUser.role && (
                 <div className="flex items-center space-x-3">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <Badge variant="secondary">{currentUser.role}</Badge>
+                  <Badge variant="secondary">{displayUser.role}</Badge>
                 </div>
               )}
 
+              {/* {displayUser.phone && (
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{displayUser.phone}</span>
+                </div>
+              )} */}
+
               {/* Skills */}
-              {currentUser.skills && currentUser.skills.length > 0 && (
+              {displayUser.skills && displayUser.skills.length > 0 && (
                 <div>
                   <p className="text-sm font-medium mb-2">Skills</p>
                   <div className="flex flex-wrap gap-2">
-                    {currentUser.skills.map((skill, index) => (
+                    {displayUser.skills.map((skill, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {skill}
                       </Badge>
@@ -178,9 +282,9 @@ export default function ProfilePage() {
 
               {/* Social Links */}
               <div className="space-y-2">
-                {currentUser.github && (
+                {displayUser.github && (
                   <a
-                    href={currentUser.github}
+                    href={displayUser.github}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
@@ -191,9 +295,9 @@ export default function ProfilePage() {
                   </a>
                 )}
 
-                {currentUser.linkedin && (
+                {displayUser.linkedin && (
                   <a
-                    href={currentUser.linkedin}
+                    href={displayUser.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
@@ -204,9 +308,9 @@ export default function ProfilePage() {
                   </a>
                 )}
 
-                {currentUser.x && (
+                {displayUser.x && (
                   <a
-                    href={currentUser.x}
+                    href={displayUser.x}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-3 text-sm hover:text-primary transition-colors"
@@ -217,6 +321,23 @@ export default function ProfilePage() {
                   </a>
                 )}
               </div>
+
+              {/* Member Since */}
+              {/* {displayUser.createdAt && (
+                <div className="flex items-center space-x-3 pt-4 border-t">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Member since</p>
+                    <p className="text-sm">
+                      {new Date(displayUser.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )} */}
             </CardContent>
           </Card>
         </div>
@@ -224,16 +345,16 @@ export default function ProfilePage() {
         {/* Activity and Stats */}
         <div className="lg:col-span-2 space-y-6">
           {/* Debug Info Card - Remove this in production */}
-          {/* <Card className="border-orange-200 bg-orange-50/50">
+          {/* <Card className="border-blue-200 bg-blue-50/50">
             <CardHeader>
-              <CardTitle className="text-sm text-orange-800">Debug Info (Remove in production)</CardTitle>
+              <CardTitle className="text-sm text-blue-800">Current User Data Source</CardTitle>
             </CardHeader>
-            <CardContent className="text-xs space-y-1 text-orange-700">
-              <div>User Wallet: {currentUser?.wallet || 'Not found'}</div>
-              <div>Projects Loading: {isLoading ? 'Yes' : 'No'}</div>
-              <div>Projects Count: {projects?.length || 0}</div>
-              <div>Error: {error || 'None'}</div>
-              <div>Projects Data: {JSON.stringify(projects?.slice(0, 2), null, 2)}</div>
+            <CardContent className="text-xs space-y-1 text-blue-700">
+              <div>Data Source: {fetchedUser ? 'API (Dynamic)' : 'Atom (Static)'}</div>
+              <div>Wallet Address: {walletAddress}</div>
+              <div>User Name: {displayUser?.name || 'Not found'}</div>
+              <div>User Role: {displayUser?.role || 'Not specified'}</div>
+              <div>Skills Count: {displayUser?.skills?.length || 0}</div>
             </CardContent>
           </Card> */}
 

@@ -57,22 +57,44 @@ export function Header() {
       setIsConnected(true);
       setWalletToCache(walletAddress as string);
 
-      // Generate and set user data for the connected wallet
-      const mockUser = {
-        wallet: walletAddress as string,
-        name: "Arav Bhivgade",
-        country: "India",
-        role: "Software Engineer",
-        skills: ["JavaScript", "React", "TypeScript", "Node.js", "Blockchain"],
-        experiences: [],
-        linkedin: "https://linkedin.com/in/johndoe",
-        x: "https://x.com/johndoe",
-        github: "https://github.com/johndoe",
-      };
+      (async () => {
+      try {
+        // Upsert minimal record on server - creates if not exists and returns user doc
+        const res = await fetch("/api/user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet: walletAddress }),
+        });
 
-      setCurrentUser(mockUser);
-      setUserToCache(mockUser);
-    }
+        if (res.ok) {
+          const user = await res.json();
+          setCurrentUser(user);
+          setUserToCache(user);
+        } else {
+          console.error("Upsert user failed", await res.text());
+        }
+      } catch (err) {
+        console.error("Error upserting user:", err);
+      }
+    })();
+  }
+
+    // Generate and set user data for the connected wallet
+    //   const mockUser = {
+    //     wallet: walletAddress as string,
+    //     name: "Arav Bhivgade",
+    //     country: "India",
+    //     role: "Software Engineer",
+    //     skills: ["JavaScript", "React", "TypeScript", "Node.js", "Blockchain"],
+    //     experiences: [],
+    //     linkedin: "https://linkedin.com/in/johndoe",
+    //     x: "https://x.com/johndoe",
+    //     github: "https://github.com/johndoe",
+    //   };
+
+    //   setCurrentUser(mockUser);
+    //   setUserToCache(mockUser);
+    // }
   }, [walletAddress, isWalletConnected]);
 
   const disconnectWallet = () => {

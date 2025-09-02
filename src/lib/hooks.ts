@@ -4,6 +4,18 @@ import { useAtom } from "jotai";
 import { currentUserAtom } from "@/store/global";
 import { useEffect, useMemo, useState } from "react";
 
+// lib/api.ts
+export async function fetchUserByWallet(wallet: string| undefined | null) {
+  if (!wallet) return null;
+  const res = await fetch(`/api/user/${wallet}`, { cache: "no-store" });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || "Failed to fetch user");
+  }
+  return res.json();
+}
+
+
 type InvestmentDTO = {
   funder: string;
   investmentIndex: number;
