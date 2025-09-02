@@ -23,8 +23,11 @@ export interface IInvestment extends Document {
   timestamp: number;
 }
 
-const ProjectSchema = new Schema<IProject>(
+export const ProjectSchema = new Schema<IProject>(
   {
+    title: { type: String, required: false, default: "" },
+    description: { type: String, required: false, default: "" },
+    members: { type: [String], required: false, default: [] },
     owner: { type: String, required: true, index: true },
     index: { type: Number, required: true, index: true },
     goal: { type: Number, required: true },
@@ -32,14 +35,8 @@ const ProjectSchema = new Schema<IProject>(
     funded: { type: Number, required: true },
     released: { type: Number, required: true },
     timestamp: { type: Number, required: true },
-    title: { type: String, required: false, default: "" },
-    description: { type: String, required: false, default: "" },
-    members: { type: [String], required: false, default: [] },
   },
-  {
-    timestamps: true,
-    collection: "projects",
-  }
+  { timestamps: true }
 );
 
 const InvestmentSchema = new Schema<IInvestment>(

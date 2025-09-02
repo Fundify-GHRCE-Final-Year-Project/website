@@ -15,7 +15,7 @@ import {
   getWalletFromCache,
   clearAllCache,
 } from "@/lib/browserCache";
-import { WagmiProvider } from "wagmi";
+import { useAccount, WagmiProvider } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmiConfig";
 import {
   MutationCache,
@@ -27,29 +27,26 @@ import { toast } from "sonner";
 import { TransactionDialogProvider } from "./ui/TransactionDialog";
 
 function AppProviders({ children }: { children: React.ReactNode }) {
-  const [isConnected, setIsConnected] = useAtom(isUserConnectedAtom);
-  const [wallet, setWallet] = useAtom(userWalletAtom);
-  const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
   const [error, setError] = useAtom(errorMessageAtom);
   const [success, setSuccess] = useAtom(successMessageAtom);
 
-  useEffect(() => {
-    // Initialize wallet connection from cache
-    const cachedWallet = getWalletFromCache();
-    if (cachedWallet) {
-      setWallet(cachedWallet);
-      setIsConnected(true);
-    } else {
-      setIsConnected(true);
-      setWallet("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
-    }
+  // useEffect(() => {
+  //   // Initialize wallet connection from cache
+  //   const cachedWallet = getWalletFromCache();
+  //   if (cachedWallet) {
+  //     setWallet(cachedWallet);
+  //     setIsConnected(true);
+  //   } else {
+  //     setIsConnected(true);
+  //     setWallet("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
+  //   }
 
-    // Initialize user data from cache
-    const cachedUser = getUserFromCache();
-    if (cachedUser) {
-      setCurrentUser(cachedUser);
-    }
-  }, []);
+  //   // Initialize user data from cache
+  //   const cachedUser = getUserFromCache();
+  //   if (cachedUser) {
+  //     setCurrentUser(cachedUser);
+  //   }
+  // }, []);
 
   useEffect(() => {
     // Auto-clear error messages after 5 seconds

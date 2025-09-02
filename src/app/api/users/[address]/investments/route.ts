@@ -1,7 +1,7 @@
 // app/api/users/[address]/investments/route.ts
-import { NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import { InvestmentModel, ProjectModel } from '@/models/project';
+import { NextResponse } from "next/server";
+import { dbConnect } from "@/lib/db";
+import { InvestmentModel, ProjectModel } from "@/models/project";
 
 export async function GET(
   request: Request,
@@ -9,19 +9,19 @@ export async function GET(
 ) {
   try {
     await dbConnect();
-    
+
     const { address } = params;
-    
+
     if (!address) {
       return NextResponse.json(
-        { ok: false, error: 'Address is required' },
+        { ok: false, error: "Address is required" },
         { status: 400 }
       );
     }
 
     // Find all investments by this user
-    const investments = await InvestmentModel.find({ 
-      funder: new RegExp(`^${address}$`, 'i') // case-insensitive match
+    const investments = await InvestmentModel.find({
+      funder: new RegExp(`^${address}$`, "i"), // case-insensitive match
     }).sort({ timestamp: -1 });
 
     // Get unique projects and populate them
@@ -34,25 +34,25 @@ export async function GET(
         projectKeys.add(key);
         projectQueries.push({
           owner: inv.projectOwner,
-          index: inv.projectIndex
+          index: inv.projectIndex,
         });
       }
     }
 
     // Fetch all unique projects
     const projects = await ProjectModel.find({
-      $or: projectQueries.length > 0 ? projectQueries : [{}]
+      $or: projectQueries.length > 0 ? projectQueries : [{}],
     });
 
     // Create a map for quick project lookup
     const projectMap = new Map();
-    projects.forEach(p => {
+    projects.forEach((p) => {
       const key = `${p.owner}-${p.index}`;
       projectMap.set(key, p);
     });
 
     // Transform investments with project data
-    const transformedInvestments = investments.map(inv => {
+    const transformedInvestments = investments.map((inv) => {
       const invData = inv.toObject ? inv.toObject() : inv;
       const projectKey = `${inv.projectOwner}-${inv.projectIndex}`;
       const project = projectMap.get(projectKey);
@@ -65,20 +65,22 @@ export async function GET(
         projectIndex: invData.projectIndex,
         amount: invData.amount,
         timestamp: invData.timestamp,
-        amountETH: parseFloat(invData.amount || '0') / Math.pow(10, 18),
-        project: project ? {
-          id: project._id?.toString(),
-          owner: project.owner,
-          index: project.index,
-          title: project.title || `Project ${project.index}`,
-          description: project.description || `Project by ${project.owner}`,
-          goal: project.goal,
-          goalETH: parseFloat(project.goal || '0') / Math.pow(10, 18),
-          funded: project.funded,
-          fundedETH: parseFloat(project.funded || '0') / Math.pow(10, 18),
-          milestones: project.milestones,
-          timestamp: project.timestamp,
-        } : null,
+        amountETH: parseFloat(invData.amount || "0") / Math.pow(10, 18),
+        project: project
+          ? {
+              id: project._id?.toString(),
+              owner: project.owner,
+              index: project.index,
+              title: project.title || `Project ${project.index}`,
+              description: project.description || `Project by ${project.owner}`,
+              goal: project.goal,
+              goalETH: parseFloat(project.goal || "0") / Math.pow(10, 18),
+              funded: project.funded,
+              fundedETH: parseFloat(project.funded || "0") / Math.pow(10, 18),
+              milestones: project.milestones,
+              timestamp: project.timestamp,
+            }
+          : null,
         createdAt: invData.createdAt,
         updatedAt: invData.updatedAt,
       };
@@ -89,11 +91,10 @@ export async function GET(
       data: transformedInvestments,
       meta: { total: transformedInvestments.length },
     });
-
   } catch (error) {
-    console.error('Error fetching user investments:', error);
+    console.error("Error fetching user investments:", error);
     return NextResponse.json(
-      { ok: false, error: 'Failed to fetch investments' },
+      { ok: false, error: "Failed to fetch investments" },
       { status: 500 }
     );
   }

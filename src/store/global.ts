@@ -1,9 +1,9 @@
-import { atom } from 'jotai';
-import { User, Project } from '@/types/global';
+import { atom } from "jotai";
+import { User, Project } from "@/types/global";
 
 // Hardcoded user
 const hardcodedUser: User = {
-  wallet: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  wallet: "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
   name: "Kartik Turak",
   country: "India",
   role: "Developer",
@@ -36,7 +36,7 @@ export const errorMessageAtom = atom<string | null>(null);
 export const successMessageAtom = atom<string | null>(null);
 
 // Navigation state
-export const currentPageAtom = atom<string>('projects');
+export const currentPageAtom = atom<string>("projects");
 
 // Derived atoms
 export const hasProjectsAtom = atom((get) => {
@@ -51,7 +51,7 @@ export const projectsLoadingAtom = atom((get) => {
 export const userProfileCompleteAtom = atom((get) => {
   const user = get(currentUserAtom);
   if (!user) return false;
-  
+
   return !!(
     user.wallet &&
     user.name &&

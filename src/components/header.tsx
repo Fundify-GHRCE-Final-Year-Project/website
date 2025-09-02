@@ -20,7 +20,7 @@ import {
   Plus,
   LogOut,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   setWalletToCache,
   clearWalletCache,
@@ -51,18 +51,15 @@ export function Header() {
     });
   };
 
-  const connectWallet = async () => {
-    try {
-      // Simulate wallet connection
-      connect({ connector: injected() });
-      const mockWallet = "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6";
-      setWallet(mockWallet);
+  useEffect(() => {
+    if (isWalletConnected) {
+      setWallet(walletAddress as string);
       setIsConnected(true);
-      setWalletToCache(mockWallet);
+      setWalletToCache(walletAddress as string);
 
       // Generate and set user data for the connected wallet
       const mockUser = {
-        wallet: mockWallet,
+        wallet: walletAddress as string,
         name: "John Doe",
         country: "United States",
         role: "Software Developer",
@@ -86,10 +83,8 @@ export function Header() {
 
       setCurrentUser(mockUser);
       setUserToCache(mockUser);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
     }
-  };
+  }, [walletAddress, isWalletConnected]);
 
   const disconnectWallet = () => {
     disconnect();
@@ -192,7 +187,7 @@ export function Header() {
                   if (window != undefined && window.ethereum == undefined) {
                     handleNoWalletConnectAttempt();
                   } else {
-                    connectWallet();
+                    connect({ connector: injected() });
                   }
                 }}
                 className="flex items-center space-x-2"
@@ -298,7 +293,13 @@ export function Header() {
                 </div>
               ) : (
                 <Button
-                  onClick={connectWallet}
+                  onClick={() => {
+                    if (window != undefined && window.ethereum == undefined) {
+                      handleNoWalletConnectAttempt();
+                    } else {
+                      connect({ connector: injected() });
+                    }
+                  }}
                   className="w-full justify-start"
                 >
                   <Wallet className="h-4 w-4 mr-2" />

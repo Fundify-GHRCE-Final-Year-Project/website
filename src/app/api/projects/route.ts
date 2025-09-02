@@ -1,7 +1,7 @@
 // app/api/projects/route.ts
-import { NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import { ProjectModel } from '@/models/project';
+import { NextResponse } from "next/server";
+import { dbConnect } from "@/lib/db";
+import { ProjectModel } from "@/models/project";
 
 // Helper to transform project document into computed fields
 function transformProject(project: any) {
@@ -9,9 +9,9 @@ function transformProject(project: any) {
   const projectData = project.toObject ? project.toObject() : project;
 
   // Parse BigInt strings to numbers and convert to ETH
-  const funded = parseFloat(projectData.funded || '0') / Math.pow(10, 18);
-  const goal = parseFloat(projectData.goal || '0') / Math.pow(10, 18);
-  const released = parseFloat(projectData.released || '0') / Math.pow(10, 18);
+  const funded = parseFloat(projectData.funded || "0") / Math.pow(10, 18);
+  const goal = parseFloat(projectData.goal || "0") / Math.pow(10, 18);
+  const released = parseFloat(projectData.released || "0") / Math.pow(10, 18);
 
   return {
     id: projectData._id?.toString() || projectData.id,
@@ -49,9 +49,9 @@ export async function GET() {
       meta: { total: transformed.length },
     });
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error("Error fetching projects:", error);
     return NextResponse.json(
-      { ok: false, error: 'Failed to fetch projects' },
+      { ok: false, error: "Failed to fetch projects" },
       { status: 500 }
     );
   }
@@ -61,7 +61,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    
+
     let body;
     try {
       body = await req.json();
@@ -69,12 +69,7 @@ export async function POST(req: Request) {
       body = {};
     }
 
-    const {
-      search = '',
-      status = 'all',
-      limit = 50,
-      offset = 0,
-    } = body;
+    const { search = "", status = "all", limit = 50, offset = 0 } = body;
 
     // Build query
     const query: any = {};
@@ -82,9 +77,9 @@ export async function POST(req: Request) {
     // Search (title, description, owner)
     if (search && search.trim()) {
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { owner: { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { owner: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -95,14 +90,18 @@ export async function POST(req: Request) {
 
     // Apply status filter
     let filtered = transformed;
-    if (status === 'active') {
-      filtered = transformed.filter(p => !p.isFullyFunded && p.fundingPercentage < 100);
-    } else if (status === 'funded') {
-      filtered = transformed.filter(p => p.isFullyFunded || p.fundingPercentage >= 100);
-    } else if (status === 'ended') {
+    if (status === "active") {
+      filtered = transformed.filter(
+        (p) => !p.isFullyFunded && p.fundingPercentage < 100
+      );
+    } else if (status === "funded") {
+      filtered = transformed.filter(
+        (p) => p.isFullyFunded || p.fundingPercentage >= 100
+      );
+    } else if (status === "ended") {
       // Consider a project ended if it's old or reached goal
       const ninetyDaysAgo = Date.now() / 1000 - 90 * 24 * 60 * 60;
-      filtered = transformed.filter(p => {
+      filtered = transformed.filter((p) => {
         const isOld = p.timestamp < ninetyDaysAgo;
         return isOld || p.isFullyFunded;
       });
@@ -120,9 +119,9 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error('Error in POST /api/projects:', error);
+    console.error("Error in POST /api/projects:", error);
     return NextResponse.json(
-      { ok: false, error: 'Failed to fetch projects' },
+      { ok: false, error: "Failed to fetch projects" },
       { status: 500 }
     );
   }
